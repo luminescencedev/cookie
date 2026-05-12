@@ -2,106 +2,104 @@ import { Hono } from "hono"
 import { requireAuth } from "../lib/middleware"
 import { db } from "../lib/db"
 import { stripe } from "../lib/stripe"
+import { auth } from "../lib/auth"
+import Stripe from "stripe"
 
-const app = new Hono()
+export const billingRoutes = new Hono<{ Variables: { userId: string } }>()
 
-app.get("/usage", requireAuth, async (c) => {
+billingRoutes.get("/subscription", requireAuth, async (c) => {
   const userId = c.get("userId")
-  const month = new Date().toISOString().slice(0, 7)
-  const subscription = await db.subscription.findUnique({ where: { userId } })
-  const isPro = subscription?.plan === "pro" && subscription?.status === "active"
-
-  const record = await db.monthlyEventCount.findUnique({
-    where: { userId_month: { userId, month } },
+  const subscription = await db.subscription.findUnique({
+    where: { userId },
+    select: { plan: true, status: true, currentPeriodEnd: true },
   })
-
-  return c.json({
-    count: record?.count ?? 0,
-    limit: isPro ? null : 5000,
-    month,
-    plan: subscription?.plan ?? "free",
-  })
+  return c.json(subscription ?? { plan: "free", status: "active", currentPeriodEnd: null })
 })
 
-app.post("/checkout", requireAuth, async (c) => {
+billingRoutes.post("/checkout", requireAuth, async (c) => {
   const userId = c.get("userId")
-  const user = await db.user.findUnique({ where: { id: userId } })
-  if (!user) return c.json({ error: "Not found" }, 404)
+
+  const session = await auth.api.getSession({ headers: c.req.raw.headers })
+  const userEmail = session!.user.email
 
   let subscription = await db.subscription.findUnique({ where: { userId } })
   let customerId = subscription?.stripeCustomerId
 
   if (!customerId) {
-    const customer = await stripe.customers.create({ email: user.email })
+    const customer = await stripe.customers.create({ email: userEmail })
     customerId = customer.id
     await db.subscription.upsert({
       where: { userId },
-      create: { userId, stripeCustomerId: customerId, plan: "free" },
       update: { stripeCustomerId: customerId },
+      create: { userId, stripeCustomerId: customerId },
     })
   }
 
-  const session = await stripe.checkout.sessions.create({
+  const checkoutSession = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: "subscription",
     payment_method_types: ["card"],
     line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID!, quantity: 1 }],
-    success_url: `${process.env.FRONTEND_URL}/dashboard/settings?upgraded=true`,
-    cancel_url: `${process.env.FRONTEND_URL}/dashboard/settings`,
+    success_url: `${process.env.FRONTEND_URL}/dashboard/settings?success=true`,
+    cancel_url: `${process.env.FRONTEND_URL}/dashboard/settings?canceled=true`,
   })
 
-  return c.json({ url: session.url })
+  return c.json({ url: checkoutSession.url })
 })
 
-app.post("/portal", requireAuth, async (c) => {
+billingRoutes.post("/portal", requireAuth, async (c) => {
   const userId = c.get("userId")
   const subscription = await db.subscription.findUnique({ where: { userId } })
-  if (!subscription?.stripeCustomerId) return c.json({ error: "No subscription" }, 400)
+  if (!subscription?.stripeCustomerId) return c.json({ error: "No active subscription" }, 404)
 
-  const session = await stripe.billingPortal.sessions.create({
+  const portalSession = await stripe.billingPortal.sessions.create({
     customer: subscription.stripeCustomerId,
     return_url: `${process.env.FRONTEND_URL}/dashboard/settings`,
   })
 
-  return c.json({ url: session.url })
+  return c.json({ url: portalSession.url })
 })
 
-app.post("/webhook", async (c) => {
+billingRoutes.post("/webhook", async (c) => {
   const sig = c.req.header("stripe-signature")!
   const body = await c.req.text()
 
-  let event: ReturnType<typeof stripe.webhooks.constructEvent>
+  let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
+    event = await stripe.webhooks.constructEventAsync(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
   } catch {
     return c.json({ error: "Invalid signature" }, 400)
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object
-    const customerId = session.customer as string
-    const sub = await db.subscription.findUnique({ where: { stripeCustomerId: customerId } })
-    if (sub) {
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const s = event.data.object as Stripe.Checkout.Session
       await db.subscription.update({
-        where: { stripeCustomerId: customerId },
-        data: { plan: "pro", status: "active", stripeSubId: session.subscription as string },
+        where: { stripeCustomerId: s.customer as string },
+        data: { stripeSubId: s.subscription as string, plan: "pro", status: "active" },
       })
+      break
+    }
+    case "customer.subscription.updated": {
+      const sub = event.data.object as Stripe.Subscription
+      await db.subscription.update({
+        where: { stripeCustomerId: sub.customer as string },
+        data: {
+          plan: sub.status === "active" ? "pro" : "free",
+          status: sub.status,
+        },
+      })
+      break
+    }
+    case "customer.subscription.deleted": {
+      const sub = event.data.object as Stripe.Subscription
+      await db.subscription.update({
+        where: { stripeCustomerId: sub.customer as string },
+        data: { plan: "free", status: "canceled", stripeSubId: null },
+      })
+      break
     }
   }
 
-  if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
-    const stripeSub = event.data.object
-    const customerId = stripeSub.customer as string
-    await db.subscription.updateMany({
-      where: { stripeCustomerId: customerId },
-      data: {
-        plan: stripeSub.status === "active" ? "pro" : "free",
-        status: stripeSub.status,
-      },
-    })
-  }
-
-  return c.json({ ok: true })
+  return c.json({ received: true })
 })
-
-export default app

@@ -38,7 +38,7 @@
     "@types/pg": "latest",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react-oxc": "^0.4.3",
+    "@vitejs/plugin-react": "^6.0.1",
     "dotenv": "latest",
     "esbuild": "latest",
     "prisma": "^7.0.0",

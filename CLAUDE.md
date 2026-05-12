@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A GDPR-compliant cookie consent banner SaaS, built day by day following `docs/day-01.md` through `docs/day-15.md`. The project spec is in `docs/00-project-context.md`.
 
-**Progress: Day 4 complete, starting Day 5.**
+**Progress: Day 5 complete, starting Day 6.**
 
 ## What is being built
 
@@ -107,7 +107,11 @@ cookieconsent/
 
 **Supabase connection:** Free tier blocks direct connections on port 5432. `DIRECT_URL` must use the pooler host (`aws-0-*.pooler.supabase.com`) at port **5432** (session mode), not the db host. `DATABASE_URL` uses the same pooler host at port **6543** (transaction mode).
 
-**Vite 8 React plugin:** Uses `@vitejs/plugin-react-oxc` (not `@vitejs/plugin-react`) — Vite 8 recommendation for better performance.
+**Vite 8 React plugin:** Uses `@vitejs/plugin-react` — switched back from `@vitejs/plugin-react-oxc` which was deprecated.
+
+**Stripe API version:** SDK requires `"2026-04-22.dahlia"` but we use `"2025-01-27.acacia" as "2026-04-22.dahlia"` to avoid a Stripe-hosted checkout page `atob` DOMException bug (Stripe-side). Our API code is correct; full browser payment flow will be validated in production (Day 15).
+
+**Stripe webhook `current_period_end`:** Removed from `customer.subscription.updated` handler — property no longer exists on `Stripe.Subscription` type in v22 SDK.
 
 ## Plans
 
