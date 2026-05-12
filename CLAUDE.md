@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-This is a **documentation-only repository**. It contains day-by-day build guides (`docs/day-01.md` through `docs/day-15.md`) for constructing a GDPR-compliant cookie consent banner SaaS from scratch. No source code exists yet — it must be written by following the docs.
+A GDPR-compliant cookie consent banner SaaS, built day by day following `docs/day-01.md` through `docs/day-15.md`. The project spec is in `docs/00-project-context.md`.
 
-The project spec lives in `docs/00-project-context.md` (read this first for any session).
+**Progress: Day 1 complete, starting Day 2.**
 
 ## What is being built
 
@@ -22,7 +22,7 @@ A cookie consent SaaS where users sign up, register their websites, customize a 
 | ORM | Prisma v7 + `@prisma/adapter-pg` |
 | Database | Supabase Postgres |
 | Payments | Stripe |
-| Rate limiting | Upstash Redis (sliding window) |
+| Rate limiting | None (Upstash removed — no-ops in `api/lib/ratelimit.ts`) |
 | Hosting | Vercel |
 | Package manager | pnpm v9+ (Node.js ≥ 20.19 required) |
 
@@ -87,10 +87,7 @@ cookieconsent/
 
 **Monthly event quota:** `MonthlyEventCount` table tracks consents per `userId + "YYYY-MM"`. Free plan is capped at 5,000/month — the API checks this before inserting a `ConsentLog` and returns 429 when exceeded.
 
-**Rate limiting:** Two Upstash sliding-window limiters keyed on `siteId`:
-- `configRatelimit` — 500 config fetches/hour
-- `consentRatelimit` — 200 consent logs/hour
-Both fail open (log warning, allow request) if Upstash is unreachable.
+**Rate limiting:** Removed — `api/lib/ratelimit.ts` exports no-ops that always return `{ success: true }`. Upstash was cut to avoid cost. Can be added back later.
 
 **CORS split:** `/api/consent/*` uses `origin: "*"` (snippet runs on any site); all other `/api/*` routes use credentialed CORS restricted to `FRONTEND_URL`.
 
@@ -99,6 +96,10 @@ Both fail open (log warning, allow request) if Upstash is unreachable.
 **Snippet build:** `VITE_API_URL` is baked into `public/banner.js` at build time. For production, this env var must be set before running `pnpm build:snippet`.
 
 **Tailwind v4:** Uses `@tailwindcss/vite` plugin. Import in CSS with `@import "tailwindcss"`, not `@tailwind base/components/utilities`.
+
+**Supabase connection:** Free tier blocks direct connections on port 5432. `DIRECT_URL` must use the pooler host (`aws-0-*.pooler.supabase.com`) at port **5432** (session mode), not the db host. `DATABASE_URL` uses the same pooler host at port **6543** (transaction mode).
+
+**Vite 8 React plugin:** Uses `@vitejs/plugin-react-oxc` (not `@vitejs/plugin-react`) — Vite 8 recommendation for better performance.
 
 ## Plans
 
