@@ -1,0 +1,49 @@
+{
+  "name": "cookieconsent",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:api": "tsx watch api/index.ts",
+    "build": "pnpm build:snippet && tsc && vite build",
+    "build:snippet": "node scripts/build-snippet.mjs",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=8"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "@hono/node-server": "^2.0.0",
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "better-auth": "latest",
+    "hono": "^4.0.0",
+    "pg": "latest",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.0.0",
+    "recharts": "latest",
+    "stripe": "^22.0.0",
+    "tailwindcss": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/pg": "latest",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react-oxc": "^0.4.3",
+    "dotenv": "latest",
+    "esbuild": "latest",
+    "prisma": "^7.0.0",
+    "tsx": "latest",
+    "typescript": "^5.0.0",
+    "vite": "^8.0.0"
+  }
+}
