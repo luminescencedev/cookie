@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { db } from "../lib/db"
 import { configRatelimit, consentRatelimit } from "../lib/ratelimit"
-import { checkAndIncrementUsage } from "../lib/usage"
+import { incrementAndCheck } from "../lib/usage"
 
 const app = new Hono()
 
@@ -37,10 +37,7 @@ app.post("/log", async (c) => {
     console.warn("Upstash unreachable, skipping rate limit")
   }
 
-  const site = await db.site.findUnique({ where: { id: body.siteId } })
-  if (!site) return c.json({ error: "Not found" }, 404)
-
-  const { allowed } = await checkAndIncrementUsage(site.userId)
+  const { allowed } = await incrementAndCheck(body.siteId)
   if (!allowed) return c.json({ error: "Monthly quota exceeded" }, 429)
 
   const log = await db.consentLog.create({

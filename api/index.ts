@@ -3,7 +3,7 @@ import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { serve } from "@hono/node-server"
 import authRoutes from "./routes/auth"
-import sitesRoutes from "./routes/sites"
+import { sitesRoutes } from "./routes/sites"
 import consentRoutes from "./routes/consent"
 import analyticsRoutes from "./routes/analytics"
 import billingRoutes from "./routes/billing"
@@ -20,7 +20,7 @@ app.use(
   cors({
     origin: [process.env.FRONTEND_URL ?? "http://localhost:5173"],
     credentials: true,
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 )
 

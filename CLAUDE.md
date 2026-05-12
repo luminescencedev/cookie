@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A GDPR-compliant cookie consent banner SaaS, built day by day following `docs/day-01.md` through `docs/day-15.md`. The project spec is in `docs/00-project-context.md`.
 
-**Progress: Day 1 complete, starting Day 2.**
+**Progress: Day 3 complete, starting Day 4.**
 
 ## What is being built
 
@@ -89,9 +89,13 @@ cookieconsent/
 
 **Rate limiting:** Removed — `api/lib/ratelimit.ts` exports no-ops that always return `{ success: true }`. Upstash was cut to avoid cost. Can be added back later.
 
-**CORS split:** `/api/consent/*` uses `origin: "*"` (snippet runs on any site); all other `/api/*` routes use credentialed CORS restricted to `FRONTEND_URL`.
+**CORS split:** `/api/consent/*` uses `origin: "*"` (snippet runs on any site); all other `/api/*` routes use credentialed CORS restricted to `FRONTEND_URL`. Allowed methods include `PATCH` — don't remove it, the config update route uses it.
 
-**Prisma v7 quirks:** Client output goes to `../generated/client`, not `node_modules`. Config lives in `prisma.config.ts` (not inside `schema.prisma`). Import from `"../generated/client"`, not `"@prisma/client"`.
+**Route ordering:** In `api/routes/sites.ts`, `/usage/current` must be declared before `/:id`, otherwise Hono matches `"current"` as a site ID.
+
+**Prisma v7 quirks:** Client output goes to `generated/client/`, not `node_modules`. Config lives in `prisma.config.ts`. Import `PrismaClient` from `"../../generated/client/client"` — there is no index file in the output directory.
+
+**Better Auth schema requirements:** The `User` model must include `emailVerified Boolean @default(false)`, `updatedAt DateTime @updatedAt`, and `image String?` — Better Auth sets these on sign-up and will throw `FAILED_TO_CREATE_USER` if they are missing.
 
 **Snippet build:** `VITE_API_URL` is baked into `public/banner.js` at build time. For production, this env var must be set before running `pnpm build:snippet`.
 
