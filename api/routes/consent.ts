@@ -3,55 +3,73 @@ import { db } from "../lib/db"
 import { configRatelimit, consentRatelimit } from "../lib/ratelimit"
 import { incrementAndCheck } from "../lib/usage"
 
-const app = new Hono()
+export const consentRoutes = new Hono()
 
-app.get("/config/:siteId", async (c) => {
-  const siteId = c.req.param("siteId")
+consentRoutes.get("/config/:siteId", async (c) => {
+  const { siteId } = c.req.param()
 
   try {
     const { success } = await configRatelimit.limit(siteId)
-    if (!success) return c.json({ error: "Rate limit exceeded" }, 429)
+    if (!success) return c.json({ error: "Too many requests" }, 429)
   } catch {
-    console.warn("Upstash unreachable, skipping rate limit")
+    // fail open — don't break the banner
   }
 
   const config = await db.bannerConfig.findUnique({ where: { siteId } })
-  if (!config) return c.json({ error: "Not found" }, 404)
-  return c.json(config)
+  if (!config) return c.json({ error: "Site not found" }, 404)
+
+  return c.json({
+    configVersion:    config.configVersion,
+    language:         config.language,
+    title:            config.title,
+    description:      config.description,
+    acceptLabel:      config.acceptLabel,
+    rejectLabel:      config.rejectLabel,
+    privacyPolicyUrl: config.privacyPolicyUrl,
+    analyticsEnabled: config.analyticsEnabled,
+    marketingEnabled: config.marketingEnabled,
+    position:         config.position,
+    primaryColor:     config.primaryColor,
+    backgroundColor:  config.backgroundColor,
+    showBranding:     config.showBranding,
+  })
 })
 
-app.post("/log", async (c) => {
-  const body = await c.req.json<{
-    siteId: string
-    choice: string
-    necessary: boolean
-    analytics: boolean
-    marketing: boolean
-    configVersion: number
-  }>()
+consentRoutes.post("/log", async (c) => {
+  const body = await c.req.json()
+  const { siteId, choice, necessary, analytics, marketing, configVersion } = body
 
-  try {
-    const { success } = await consentRatelimit.limit(body.siteId)
-    if (!success) return c.json({ error: "Rate limit exceeded" }, 429)
-  } catch {
-    console.warn("Upstash unreachable, skipping rate limit")
+  if (!siteId || !["accepted", "rejected", "partial"].includes(choice)) {
+    return c.json({ error: "Invalid payload" }, 400)
   }
 
-  const { allowed } = await incrementAndCheck(body.siteId)
-  if (!allowed) return c.json({ error: "Monthly quota exceeded" }, 429)
+  try {
+    const { success } = await consentRatelimit.limit(siteId)
+    if (!success) return c.json({ error: "Rate limit exceeded" }, 429)
+  } catch {
+    // fail open
+  }
 
-  const log = await db.consentLog.create({
+  const { allowed } = await incrementAndCheck(siteId)
+  if (!allowed) {
+    // return 200 — not the visitor's fault the site owner hit their limit
+    return c.json({ ok: true, stored: false })
+  }
+
+  const site = await db.site.findUnique({ where: { id: siteId } })
+  if (!site) return c.json({ error: "Site not found" }, 404)
+
+  await db.consentLog.create({
     data: {
-      siteId: body.siteId,
-      choice: body.choice,
-      necessary: body.necessary,
-      analytics: body.analytics,
-      marketing: body.marketing,
-      configVersion: body.configVersion,
-      userAgent: c.req.header("user-agent"),
+      siteId,
+      choice,
+      necessary: necessary ?? true,
+      analytics: analytics ?? (choice === "accepted"),
+      marketing: marketing ?? (choice === "accepted"),
+      configVersion: configVersion ?? 1,
+      userAgent: c.req.header("user-agent") ?? null,
     },
   })
-  return c.json(log, 201)
-})
 
-export default app
+  return c.json({ ok: true, stored: true })
+})

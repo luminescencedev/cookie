@@ -4,8 +4,8 @@ import { cors } from "hono/cors"
 import { serve } from "@hono/node-server"
 import authRoutes from "./routes/auth"
 import { sitesRoutes } from "./routes/sites"
-import consentRoutes from "./routes/consent"
-import analyticsRoutes from "./routes/analytics"
+import { consentRoutes } from "./routes/consent"
+import { analyticsRoutes } from "./routes/analytics"
 import billingRoutes from "./routes/billing"
 
 const app = new Hono()
