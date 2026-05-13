@@ -1,20 +1,23 @@
-import { build } from "esbuild"
+import * as esbuild from "esbuild"
+import { writeFileSync } from "fs"
 import { config } from "dotenv"
 
 config()
 
-const apiUrl = process.env.VITE_API_URL ?? "http://localhost:3000"
+const API_BASE = process.env.VITE_API_URL ?? "http://localhost:3000"
 
-await build({
+const result = await esbuild.build({
   entryPoints: ["snippet/banner.ts"],
   bundle: true,
   minify: true,
-  outfile: "public/banner.js",
+  write: false,
+  target: ["es2018"],
   format: "iife",
   define: {
-    "__VITE_API_URL__": JSON.stringify(apiUrl),
+    "__API_BASE__": JSON.stringify(API_BASE),
   },
-  target: "es2017",
 })
 
-console.log(`Snippet built → public/banner.js (API: ${apiUrl})`)
+const code = new TextDecoder().decode(result.outputFiles[0].contents)
+writeFileSync("public/banner.js", code)
+console.log(`✓ Built public/banner.js (${(code.length / 1024).toFixed(1)}kb)`)

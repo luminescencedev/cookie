@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <title>Snippet test</title>
+    <!-- Simulate a Google Analytics cookie to trigger scanner -->
+    <script>
+      document.cookie = "_ga=GA1.1.test; path=/";
+    </script>
+  </head>
+  <body>
+    <h1>Test page</h1>
+    <p>Open DevTools console to see consent events.</p>
+
+    <script
+      src="http://localhost:5173/banner.js"
+      data-site-id="cmp3b51zd00027ciopds7aake"
+      async
+    ></script>
+
+    <script>
+      window.addEventListener("cc:consent", (e) => {
+        console.log("Consent:", e.detail);
+        console.log("May fire analytics?", window.cookieConsent.hasAnalytics());
+        console.log("May fire marketing?", window.cookieConsent.hasMarketing());
+      });
+    </script>
+  </body>
+</html>

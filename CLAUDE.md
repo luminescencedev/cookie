@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A GDPR-compliant cookie consent banner SaaS, built day by day following `docs/day-01.md` through `docs/day-15.md`. The project spec is in `docs/00-project-context.md`.
 
-**Progress: Day 10 complete, starting Day 11.**
+**Progress: Day 11 complete, starting Day 12.**
 
 ## What is being built
 
@@ -112,6 +112,12 @@ cookieconsent/
 **Stripe API version:** SDK requires `"2026-04-22.dahlia"` but we use `"2025-01-27.acacia" as "2026-04-22.dahlia"` to avoid a Stripe-hosted checkout page `atob` DOMException bug (Stripe-side). Our API code is correct; full browser payment flow will be validated in production (Day 15).
 
 **Stripe webhook `current_period_end`:** Removed from `customer.subscription.updated` handler — property no longer exists on `Stripe.Subscription` type in v22 SDK.
+
+**Snippet `__API_BASE__` define:** esbuild `define` replaces identifiers, not string literals. The snippet uses `declare const __API_BASE__: string` at module level (outside the IIFE) so esbuild can substitute it. The doc's `const API_BASE = "__API_BASE__"` string approach does not work.
+
+**Snippet build script:** `scripts/build-snippet.mjs` must import and call `dotenv/config` (`import { config } from "dotenv"; config()`) to load `VITE_API_URL` from `.env`. Without it, the URL falls back to `https://yourdomain.com`.
+
+**Snippet test:** `test/index.html` must be served from a non-Vite server (e.g. `npx serve public -l 8080`) to avoid Vite's HMR injection causing CSP eval errors. Access via `http://localhost:8080/test.html` (file must be in `public/`).
 
 ## Plans
 
