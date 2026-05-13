@@ -8,6 +8,5 @@ export default defineConfig({
   },
   migrations: {
     path: "prisma/migrations",
-    connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? "",
   },
 })
