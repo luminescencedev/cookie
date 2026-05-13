@@ -3,10 +3,10 @@ import Sidebar from "./Sidebar"
 
 export default function DashboardLayout() {
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div style={{ minHeight: "100vh", display: "flex", background: "var(--bg)" }}>
       <Sidebar />
-      <main className="ml-56 min-h-screen">
-        <div className="max-w-5xl mx-auto px-8 py-8">
+      <main style={{ flex: 1, marginLeft: "240px", minHeight: "100vh" }}>
+        <div style={{ maxWidth: "1024px", margin: "0 auto", padding: "32px" }}>
           <Outlet />
         </div>
       </main>

@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
+import { motion } from "motion/react"
+import { RiSaveLine, RiCheckLine, RiCodeLine } from "react-icons/ri"
 import { api } from "../../lib/api"
 import type { Site, BannerConfig } from "../../lib/types"
 import PageHeader from "../../components/ui/PageHeader"
 import Button from "../../components/ui/Button"
 import BannerPreview from "../../components/dashboard/BannerPreview"
 import Analytics from "../../components/dashboard/Analytics"
+
+const ease: [number, number, number, number] = [0.21, 0.47, 0.32, 0.98]
 
 const LANGUAGES = [
   { value: "auto", label: "Auto-detect (browser language)" },
@@ -15,6 +19,14 @@ const LANGUAGES = [
   { value: "es",   label: "Español" },
   { value: "it",   label: "Italiano" },
 ]
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 14px",
+  borderRadius: "8px",
+  fontSize: "0.875rem",
+  boxSizing: "border-box",
+}
 
 export default function SiteDetail() {
   const { id } = useParams<{ id: string }>()
@@ -46,39 +58,61 @@ export default function SiteDetail() {
     setConfig(updated)
     setSaving(false)
     setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    setTimeout(() => setSaved(false), 2500)
   }
 
-  if (loading) return <p className="text-sm text-neutral-400">Loading...</p>
-  if (!site || !config) return <p className="text-sm text-red-500">Site not found</p>
+  if (loading) return <p className="text-sm" style={{ color: "var(--muted)" }}>Loading…</p>
+  if (!site || !config) return <p className="text-sm" style={{ color: "var(--red)" }}>Site not found</p>
 
   return (
-    <div>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease }}>
       <PageHeader
         title={site.name}
         description={site.domain}
         action={
-          <div className="flex items-center gap-3">
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {saved && (
-              <span className="text-xs text-green-600 font-medium">
-                ✓ Saved — visitors will be asked to re-consent
-              </span>
+              <motion.span
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0 }}
+                style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.75rem", fontWeight: 500, color: "var(--accent)" }}
+              >
+                <RiCheckLine size={13} /> Saved — visitors will be re-asked
+              </motion.span>
             )}
-            <Button onClick={handleSave} loading={saving}>Save changes</Button>
+            <Button onClick={handleSave} loading={saving}>
+              <RiSaveLine size={14} /> Save changes
+            </Button>
           </div>
         }
       />
 
-      <div className="flex gap-1 bg-neutral-100 rounded-lg p-1 w-fit mb-6">
+      {/* Tabs */}
+      <div style={{
+        display: "flex",
+        gap: "4px",
+        borderRadius: "12px",
+        padding: "4px",
+        width: "fit-content",
+        marginBottom: "24px",
+        background: "var(--surface)",
+      }}>
         {(["configure", "analytics"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-1.5 text-sm rounded-md transition ${
-              tab === t
-                ? "bg-white shadow-sm font-medium text-neutral-900"
-                : "text-neutral-500 hover:text-neutral-700"
-            }`}
+            className="text-sm font-medium"
+            style={{
+              padding: "6px 16px",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+              transition: "all 0.15s",
+              background: tab === t ? "var(--surface-2)" : "transparent",
+              color: tab === t ? "var(--text)" : "var(--muted)",
+              boxShadow: tab === t ? "0 1px 3px rgba(0,0,0,0.3)" : "none",
+            }}
           >
             {t === "configure" ? "Configure" : "Analytics"}
           </button>
@@ -88,59 +122,41 @@ export default function SiteDetail() {
       {tab === "analytics" && <Analytics siteId={site.id} />}
 
       {tab === "configure" && (
-        <div className="grid grid-cols-2 gap-8">
-          <div className="space-y-4">
-
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <Section title="Language">
               <Field label="Banner language">
                 <select
                   value={config.language}
                   onChange={(e) => updateConfig("language", e.target.value as BannerConfig["language"])}
-                  className={selectClass}
+                  style={inputStyle}
                 >
-                  {LANGUAGES.map((l) => (
-                    <option key={l.value} value={l.value}>{l.label}</option>
-                  ))}
+                  {LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
                 </select>
               </Field>
-              <p className="text-xs text-neutral-400">
-                "Auto-detect" uses the visitor's browser language. Falls back to English if unsupported.
+              <p className="text-xs" style={{ color: "var(--muted)" }}>
+                "Auto-detect" uses the visitor's browser language, falls back to English.
               </p>
             </Section>
 
             <Section title="Content">
               <Field label="Title">
-                <input
-                  type="text"
-                  value={config.title}
-                  onChange={(e) => updateConfig("title", e.target.value)}
-                  className={inputClass}
-                />
+                <input type="text" value={config.title} onChange={(e) => updateConfig("title", e.target.value)} style={inputStyle} />
               </Field>
               <Field label="Description">
                 <textarea
                   value={config.description}
                   onChange={(e) => updateConfig("description", e.target.value)}
                   rows={3}
-                  className={inputClass + " resize-none"}
+                  style={{ ...inputStyle, resize: "none" }}
                 />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <Field label="Accept button">
-                  <input
-                    type="text"
-                    value={config.acceptLabel}
-                    onChange={(e) => updateConfig("acceptLabel", e.target.value)}
-                    className={inputClass}
-                  />
+                  <input type="text" value={config.acceptLabel} onChange={(e) => updateConfig("acceptLabel", e.target.value)} style={inputStyle} />
                 </Field>
                 <Field label="Reject button">
-                  <input
-                    type="text"
-                    value={config.rejectLabel}
-                    onChange={(e) => updateConfig("rejectLabel", e.target.value)}
-                    className={inputClass}
-                  />
+                  <input type="text" value={config.rejectLabel} onChange={(e) => updateConfig("rejectLabel", e.target.value)} style={inputStyle} />
                 </Field>
               </div>
               <Field label="Privacy policy URL">
@@ -149,67 +165,49 @@ export default function SiteDetail() {
                   value={config.privacyPolicyUrl ?? ""}
                   onChange={(e) => updateConfig("privacyPolicyUrl", e.target.value || null)}
                   placeholder="https://yoursite.com/privacy"
-                  className={inputClass}
+                  style={inputStyle}
                 />
-                <p className="text-xs text-neutral-400 mt-1">
-                  Shown as a link in the banner footer. Strongly recommended for GDPR compliance.
+                <p className="text-xs" style={{ color: "var(--muted)", marginTop: "4px" }}>
+                  Strongly recommended for GDPR compliance.
                 </p>
               </Field>
             </Section>
 
             <Section title="Consent categories">
-              <p className="text-xs text-neutral-500 mb-3">
-                Necessary cookies are always active and cannot be disabled. Enable the other categories to show granular opt-in toggles to visitors.
+              <p className="text-xs" style={{ color: "var(--muted)", marginBottom: "12px" }}>
+                Necessary cookies are always active. Enable others to show granular toggles.
               </p>
-              <CategoryRow
-                label="Necessary"
-                description="Required for the site to function. Always active."
-                enabled={true}
-                alwaysOn={true}
-                onChange={() => {}}
-              />
-              <CategoryRow
-                label="Analytics"
-                description="Help you understand how visitors use your site (e.g. Google Analytics)."
-                enabled={config.analyticsEnabled}
-                alwaysOn={false}
-                onChange={(v) => updateConfig("analyticsEnabled", v)}
-              />
-              <CategoryRow
-                label="Marketing"
-                description="Used to deliver personalized advertisements (e.g. Facebook Pixel)."
-                enabled={config.marketingEnabled}
-                alwaysOn={false}
-                onChange={(v) => updateConfig("marketingEnabled", v)}
-              />
+              <CategoryRow label="Necessary" description="Required for the site to function." enabled alwaysOn onChange={() => {}} />
+              <CategoryRow label="Analytics" description="e.g. Google Analytics, Plausible." enabled={config.analyticsEnabled} alwaysOn={false} onChange={(v) => updateConfig("analyticsEnabled", v)} />
+              <CategoryRow label="Marketing" description="e.g. Facebook Pixel, Google Ads." enabled={config.marketingEnabled} alwaysOn={false} onChange={(v) => updateConfig("marketingEnabled", v)} />
             </Section>
 
             <Section title="Appearance">
-              <div className="grid grid-cols-2 gap-3">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <Field label="Primary color">
-                  <ColorField
-                    value={config.primaryColor}
-                    onChange={(v) => updateConfig("primaryColor", v)}
-                  />
+                  <ColorField value={config.primaryColor} onChange={(v) => updateConfig("primaryColor", v)} />
                 </Field>
                 <Field label="Background color">
-                  <ColorField
-                    value={config.backgroundColor}
-                    onChange={(v) => updateConfig("backgroundColor", v)}
-                  />
+                  <ColorField value={config.backgroundColor} onChange={(v) => updateConfig("backgroundColor", v)} />
                 </Field>
               </div>
               <Field label="Position">
-                <div className="flex gap-2">
+                <div style={{ display: "flex", gap: "8px" }}>
                   {(["bottom", "modal"] as const).map((pos) => (
                     <button
                       key={pos}
                       onClick={() => updateConfig("position", pos)}
-                      className={`flex-1 py-2 text-sm rounded-lg border transition ${
-                        config.position === pos
-                          ? "border-neutral-900 bg-neutral-900 text-white"
-                          : "border-neutral-200 text-neutral-600 hover:bg-neutral-50"
-                      }`}
+                      className="text-sm"
+                      style={{
+                        flex: 1,
+                        padding: "8px",
+                        borderRadius: "8px",
+                        border: `1px solid ${config.position === pos ? "var(--accent)" : "var(--border-2)"}`,
+                        cursor: "pointer",
+                        transition: "all 0.15s",
+                        background: config.position === pos ? "var(--accent-dim)" : "transparent",
+                        color: config.position === pos ? "var(--accent)" : "var(--muted)",
+                      }}
                     >
                       {pos === "bottom" ? "Bottom bar" : "Modal"}
                     </button>
@@ -217,18 +215,13 @@ export default function SiteDetail() {
                 </div>
               </Field>
               <Field label="Branding">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={config.showBranding}
-                    onChange={(e) => updateConfig("showBranding", e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-neutral-700">
+                <label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
+                  <Toggle checked={config.showBranding} onChange={(v) => updateConfig("showBranding", v)} />
+                  <span className="text-sm" style={{ color: "var(--text)" }}>
                     Show "Powered by CookieConsent"
                   </span>
                   {!config.showBranding && (
-                    <span className="text-xs bg-neutral-900 text-white px-1.5 py-0.5 rounded-full">
+                    <span className="text-xs font-medium" style={{ padding: "2px 6px", borderRadius: "9999px", background: "var(--accent-dim)", color: "var(--accent)" }}>
                       Pro
                     </span>
                   )}
@@ -241,28 +234,30 @@ export default function SiteDetail() {
             </Section>
           </div>
 
-          <div className="sticky top-8">
-            <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide mb-3">
+          <div style={{ position: "sticky", top: "32px" }}>
+            <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "var(--muted)", marginBottom: "12px" }}>
               Live preview
             </p>
             <BannerPreview config={config} />
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }
 
-const inputClass =
-  "w-full rounded-lg border border-neutral-200 px-3.5 py-2.5 text-sm outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 transition"
-
-const selectClass =
-  "w-full rounded-lg border border-neutral-200 px-3.5 py-2.5 text-sm outline-none focus:border-neutral-400 bg-white transition"
-
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-neutral-100 rounded-xl p-5 space-y-4">
-      <h3 className="text-sm font-medium text-neutral-900">{title}</h3>
+    <div style={{
+      borderRadius: "12px",
+      border: "1px solid var(--border)",
+      padding: "20px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "16px",
+      background: "var(--surface)",
+    }}>
+      <h3 className="text-sm font-semibold font-display" style={{ color: "var(--text)" }}>{title}</h3>
       {children}
     </div>
   )
@@ -270,8 +265,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-medium text-neutral-500">{label}</label>
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>{label}</label>
       {children}
     </div>
   )
@@ -279,57 +274,72 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function ColorField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="flex items-center gap-2">
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
       <input
         type="color"
         value={value || "#000000"}
         onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-10 rounded cursor-pointer border border-neutral-200"
+        style={{ height: "40px", width: "40px", borderRadius: "8px", cursor: "pointer", border: "1px solid var(--border-2)", padding: "2px", background: "var(--surface-2)", boxSizing: "border-box" }}
       />
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={inputClass + " flex-1"}
+        style={{ ...inputStyle, flex: 1 }}
         placeholder="#000000"
       />
     </div>
   )
 }
 
-function CategoryRow({
-  label,
-  description,
-  enabled,
-  alwaysOn,
-  onChange,
-}: {
-  label: string
-  description: string
-  enabled: boolean
-  alwaysOn: boolean
-  onChange: (v: boolean) => void
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      style={{
+        position: "relative",
+        width: "36px",
+        height: "20px",
+        borderRadius: "9999px",
+        border: "1px solid var(--border-2)",
+        cursor: "pointer",
+        flexShrink: 0,
+        background: checked ? "var(--accent)" : "var(--surface-2)",
+        transition: "background 0.2s",
+      }}
+    >
+      <motion.div
+        animate={{ x: checked ? 16 : 2 }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        style={{
+          position: "absolute",
+          top: "2px",
+          width: "14px",
+          height: "14px",
+          borderRadius: "9999px",
+          background: checked ? "var(--bg)" : "var(--muted)",
+        }}
+      />
+    </button>
+  )
+}
+
+function CategoryRow({ label, description, enabled, alwaysOn, onChange }: {
+  label: string; description: string; enabled: boolean; alwaysOn: boolean; onChange: (v: boolean) => void
 }) {
   return (
-    <div className="flex items-start justify-between py-3 border-b border-neutral-50 last:border-0">
-      <div className="flex-1 pr-4">
-        <p className="text-sm font-medium text-neutral-800">{label}</p>
-        <p className="text-xs text-neutral-400 mt-0.5">{description}</p>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
+      <div style={{ flex: 1, paddingRight: "16px" }}>
+        <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{label}</p>
+        <p className="text-xs" style={{ color: "var(--muted)", marginTop: "2px" }}>{description}</p>
       </div>
       {alwaysOn ? (
-        <span className="text-xs text-neutral-400 bg-neutral-100 px-2 py-1 rounded-full whitespace-nowrap">
+        <span className="text-xs" style={{ padding: "4px 8px", borderRadius: "9999px", background: "var(--surface-2)", color: "var(--muted)" }}>
           Always active
         </span>
       ) : (
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={(e) => onChange(e.target.checked)}
-            className="sr-only peer"
-          />
-          <div className="w-9 h-5 bg-neutral-200 rounded-full peer-checked:bg-neutral-900 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" />
-        </label>
+        <Toggle checked={enabled} onChange={onChange} />
       )}
     </div>
   )
@@ -347,15 +357,28 @@ function EmbedCode({ siteId, configVersion }: { siteId: string; configVersion: n
 
   return (
     <div>
-      <div className="bg-neutral-50 rounded-lg border border-neutral-200 p-3 font-mono text-xs text-neutral-600 break-all mb-2">
+      <div style={{
+        borderRadius: "8px",
+        padding: "12px",
+        fontFamily: "monospace",
+        fontSize: "0.75rem",
+        wordBreak: "break-all",
+        lineHeight: 1.6,
+        marginBottom: "12px",
+        background: "var(--surface-2)",
+        border: "1px solid var(--border-2)",
+        color: "var(--muted)",
+      }}>
         {code}
       </div>
-      <Button size="sm" variant="secondary" onClick={copy}>
-        {copied ? "Copied!" : "Copy embed code"}
-      </Button>
-      <p className="text-xs text-neutral-400 mt-2">
-        Paste this in the &lt;head&gt; of your website. Current config version: <strong>{configVersion}</strong>
-      </p>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <Button size="sm" variant="secondary" onClick={copy}>
+          {copied ? <><RiCheckLine size={13} /> Copied!</> : <><RiCodeLine size={13} /> Copy embed code</>}
+        </Button>
+        <p className="text-xs" style={{ color: "var(--muted)" }}>
+          Config version: <strong style={{ color: "var(--text)" }}>{configVersion}</strong>
+        </p>
+      </div>
     </div>
   )
 }

@@ -6,14 +6,16 @@ interface Props {
 
 export default function PageHeader({ title, description, action }: Props) {
   return (
-    <div className="flex items-start justify-between mb-8">
+    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "32px" }}>
       <div>
-        <h1 className="text-xl font-semibold text-neutral-900">{title}</h1>
+        <h1 className="text-xl font-semibold font-display" style={{ color: "var(--text)" }}>
+          {title}
+        </h1>
         {description && (
-          <p className="text-sm text-neutral-500 mt-1">{description}</p>
+          <p className="text-sm" style={{ color: "var(--muted)", marginTop: "4px" }}>{description}</p>
         )}
       </div>
-      {action && <div>{action}</div>}
+      {action && <div style={{ flexShrink: 0 }}>{action}</div>}
     </div>
   )
 }

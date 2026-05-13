@@ -5,42 +5,54 @@ export default function BannerPreview({ config }: { config: BannerConfig }) {
   const [showCustomize, setShowCustomize] = useState(false)
 
   return (
-    <div
-      className="relative rounded-xl overflow-hidden border border-neutral-200"
-      style={{ height: showCustomize ? 420 : 300, background: "#f8f8f8", transition: "height 0.2s" }}
-    >
+    <div style={{
+      position: "relative",
+      borderRadius: "12px",
+      overflow: "hidden",
+      border: "1px solid #e5e5e5",
+      height: showCustomize ? 420 : 300,
+      background: "#f8f8f8",
+      transition: "height 0.2s",
+    }}>
       {/* Fake browser chrome */}
-      <div className="bg-neutral-100 border-b border-neutral-200 px-4 py-2 flex items-center gap-2">
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-neutral-300" />
-          <div className="w-3 h-3 rounded-full bg-neutral-300" />
-          <div className="w-3 h-3 rounded-full bg-neutral-300" />
+      <div style={{
+        background: "#f0f0f0",
+        borderBottom: "1px solid #e5e5e5",
+        padding: "8px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+      }}>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <div style={{ width: "12px", height: "12px", borderRadius: "9999px", background: "#d1d5db" }} />
+          <div style={{ width: "12px", height: "12px", borderRadius: "9999px", background: "#d1d5db" }} />
+          <div style={{ width: "12px", height: "12px", borderRadius: "9999px", background: "#d1d5db" }} />
         </div>
-        <div className="flex-1 bg-white rounded-md h-5 mx-2 border border-neutral-200" />
+        <div style={{ flex: 1, background: "white", borderRadius: "6px", height: "20px", margin: "0 8px", border: "1px solid #e5e5e5" }} />
       </div>
 
       {/* Fake page content */}
-      <div className="p-4 space-y-2">
-        <div className="h-3 bg-neutral-200 rounded w-3/4" />
-        <div className="h-3 bg-neutral-200 rounded w-1/2" />
-        <div className="h-3 bg-neutral-200 rounded w-2/3" />
+      <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+        <div style={{ height: "12px", background: "#e5e7eb", borderRadius: "4px", width: "75%" }} />
+        <div style={{ height: "12px", background: "#e5e7eb", borderRadius: "4px", width: "50%" }} />
+        <div style={{ height: "12px", background: "#e5e7eb", borderRadius: "4px", width: "66%" }} />
       </div>
 
       {config.position === "modal" ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 px-4">
-          <BannerBox
-            config={config}
-            showCustomize={showCustomize}
-            onToggleCustomize={() => setShowCustomize(!showCustomize)}
-          />
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "16px",
+          background: "rgba(0,0,0,0.2)",
+        }}>
+          <BannerBox config={config} showCustomize={showCustomize} onToggleCustomize={() => setShowCustomize(!showCustomize)} />
         </div>
       ) : (
-        <div className="absolute bottom-0 left-0 right-0">
-          <BannerBox
-            config={config}
-            showCustomize={showCustomize}
-            onToggleCustomize={() => setShowCustomize(!showCustomize)}
-          />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
+          <BannerBox config={config} showCustomize={showCustomize} onToggleCustomize={() => setShowCustomize(!showCustomize)} />
         </div>
       )}
     </div>
@@ -57,58 +69,60 @@ function BannerBox({
   onToggleCustomize: () => void
 }) {
   return (
-    <div
-      className={`w-full p-4 ${config.position === "modal" ? "rounded-xl" : ""}`}
-      style={{ background: config.backgroundColor }}
-    >
+    <div style={{
+      width: "100%",
+      padding: "16px",
+      borderRadius: config.position === "modal" ? "12px" : undefined,
+      background: config.backgroundColor,
+    }}>
       {!showCustomize ? (
         <>
-          <p className="text-xs font-semibold mb-0.5" style={{ color: config.primaryColor }}>
+          <p className="text-xs font-semibold" style={{ color: config.primaryColor, marginBottom: "2px" }}>
             {config.title || "We use cookies"}
           </p>
-          <p className="text-xs mb-3" style={{ color: config.primaryColor, opacity: 0.7 }}>
+          <p className="text-xs" style={{ color: config.primaryColor, opacity: 0.7, marginBottom: "12px" }}>
             {config.description || "This site uses cookies."}
           </p>
-          <div className="flex gap-2 flex-wrap">
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button
-              className="px-3 py-1.5 rounded text-xs font-medium"
-              style={{ background: config.primaryColor, color: config.backgroundColor }}
+              className="text-xs font-medium"
+              style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", background: config.primaryColor, color: config.backgroundColor }}
             >
               {config.acceptLabel || "Accept all"}
             </button>
             <button
-              className="px-3 py-1.5 rounded text-xs"
-              style={{ color: config.primaryColor, border: `1px solid ${config.primaryColor}` }}
+              className="text-xs"
+              style={{ padding: "6px 12px", borderRadius: "4px", cursor: "pointer", background: "transparent", color: config.primaryColor, border: `1px solid ${config.primaryColor}` }}
             >
               {config.rejectLabel || "Reject all"}
             </button>
             {(config.analyticsEnabled || config.marketingEnabled) && (
               <button
                 onClick={onToggleCustomize}
-                className="px-3 py-1.5 rounded text-xs"
-                style={{ color: config.primaryColor, opacity: 0.6 }}
+                className="text-xs"
+                style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", background: "transparent", color: config.primaryColor, opacity: 0.6 }}
               >
                 Customize →
               </button>
             )}
           </div>
           {config.privacyPolicyUrl && (
-            <p className="text-xs mt-2" style={{ color: config.primaryColor, opacity: 0.4 }}>
+            <p className="text-xs" style={{ color: config.primaryColor, opacity: 0.4, marginTop: "8px" }}>
               Privacy policy
             </p>
           )}
           {config.showBranding && (
-            <p className="text-xs mt-1 opacity-30" style={{ color: config.primaryColor }}>
+            <p className="text-xs" style={{ color: config.primaryColor, opacity: 0.3, marginTop: "4px" }}>
               Powered by CookieConsent
             </p>
           )}
         </>
       ) : (
         <>
-          <p className="text-xs font-semibold mb-3" style={{ color: config.primaryColor }}>
+          <p className="text-xs font-semibold" style={{ color: config.primaryColor, marginBottom: "12px" }}>
             Customize preferences
           </p>
-          <div className="space-y-2 mb-3">
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
             <CategoryPreviewRow label="Necessary" alwaysOn color={config.primaryColor} />
             {config.analyticsEnabled && (
               <CategoryPreviewRow label="Analytics" color={config.primaryColor} />
@@ -117,17 +131,17 @@ function BannerBox({
               <CategoryPreviewRow label="Marketing" color={config.primaryColor} />
             )}
           </div>
-          <div className="flex gap-2">
+          <div style={{ display: "flex", gap: "8px" }}>
             <button
-              className="px-3 py-1.5 rounded text-xs font-medium"
-              style={{ background: config.primaryColor, color: config.backgroundColor }}
+              className="text-xs font-medium"
+              style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", background: config.primaryColor, color: config.backgroundColor }}
             >
               Save preferences
             </button>
             <button
               onClick={onToggleCustomize}
-              className="px-3 py-1.5 rounded text-xs"
-              style={{ color: config.primaryColor, opacity: 0.6 }}
+              className="text-xs"
+              style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", background: "transparent", color: config.primaryColor, opacity: 0.6 }}
             >
               ← Back
             </button>
@@ -140,12 +154,12 @@ function BannerBox({
 
 function CategoryPreviewRow({ label, alwaysOn, color }: { label: string; alwaysOn?: boolean; color: string }) {
   return (
-    <div className="flex items-center justify-between">
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <span className="text-xs" style={{ color, opacity: 0.8 }}>{label}</span>
       {alwaysOn ? (
         <span className="text-xs" style={{ color, opacity: 0.4 }}>Always active</span>
       ) : (
-        <div className="w-7 h-4 rounded-full" style={{ background: color, opacity: 0.3 }} />
+        <div style={{ width: "28px", height: "16px", borderRadius: "9999px", background: color, opacity: 0.3 }} />
       )}
     </div>
   )
