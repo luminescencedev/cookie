@@ -1,6 +1,8 @@
 export default function Spinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  const sizes = { sm: "w-4 h-4", md: "w-6 h-6", lg: "w-8 h-8" }
+  const sizes = { sm: "size-4", md: "size-5", lg: "size-8" }
   return (
-    <div className={`${sizes[size]} border-2 border-neutral-200 border-t-neutral-600 rounded-full animate-spin`} />
+    <div
+      className={`${sizes[size]} rounded-full border-2 border-neutral-200 border-t-neutral-800 animate-spin`}
+    />
   )
 }

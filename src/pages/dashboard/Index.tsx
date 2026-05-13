@@ -1,24 +1,29 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router"
 import { motion } from "motion/react"
-import { RiGlobalLine, RiArrowRightLine, RiAddLine, RiBarChartLine, RiShieldCheckLine } from "react-icons/ri"
+import {
+  RiGlobalLine,
+  RiArrowRightLine,
+  RiAddLine,
+  RiBarChartLine,
+  RiShieldCheckLine,
+} from "react-icons/ri"
 import { api } from "../../lib/api"
 import type { Site } from "../../lib/types"
 
 const ease: [number, number, number, number] = [0.21, 0.47, 0.32, 0.98]
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease } },
+  hidden: { opacity: 0, y: 10 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.38, ease } },
 }
-
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
+  show:   { transition: { staggerChildren: 0.06 } },
 }
 
 export default function DashboardIndex() {
-  const [sites, setSites] = useState<Site[]>([])
+  const [sites, setSites]   = useState<Site[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -28,151 +33,117 @@ export default function DashboardIndex() {
   const totalConsent = sites.reduce((sum, s) => sum + (s._count?.consentLogs ?? 0), 0)
 
   return (
-    <motion.div initial="hidden" animate="show" variants={stagger} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+    <motion.div
+      initial="hidden"
+      animate="show"
+      variants={stagger}
+      className="flex flex-col gap-8"
+    >
+      {/* Header */}
       <motion.div variants={fadeUp}>
-        <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "var(--accent)", marginBottom: "4px" }}>
-          Dashboard
-        </p>
-        <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Overview</h1>
-        <p className="text-sm" style={{ color: "var(--muted)", marginTop: "4px" }}>Your cookie consent at a glance</p>
+        <h1 className="text-sm font-medium text-neutral-800">Overview</h1>
+        <p className="text-sm text-neutral-500 mt-0.5">Your consent stats at a glance</p>
       </motion.div>
 
-      <motion.div variants={stagger} style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
-        <StatCard icon={RiGlobalLine} label="Total sites" value={loading ? "—" : String(sites.length)} />
-        <StatCard icon={RiBarChartLine} label="Total consents" value={loading ? "—" : totalConsent.toLocaleString()} />
-        <StatCard icon={RiShieldCheckLine} label="Plan" value="Free" accent />
+      {/* Stat cards */}
+      <motion.div variants={stagger} className="grid grid-cols-3 gap-3">
+        <StatCard icon={RiGlobalLine}     label="Total sites"    value={loading ? "—" : String(sites.length)} />
+        <StatCard icon={RiBarChartLine}   label="Total consents" value={loading ? "—" : totalConsent.toLocaleString()} />
+        <StatCard icon={RiShieldCheckLine} label="Plan"          value="Free" />
       </motion.div>
 
+      {/* Sites list */}
       <motion.div variants={fadeUp}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-          <p className="text-sm font-semibold font-display" style={{ color: "var(--text)" }}>Your sites</p>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-medium text-neutral-800">Your sites</h2>
           <Link
             to="/dashboard/sites"
-            style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", color: "var(--muted)", textDecoration: "none" }}
+            className="flex items-center gap-1 text-sm text-neutral-400 hover:text-neutral-800 transition-colors underline-offset-2"
           >
-            View all <RiArrowRightLine size={12} />
+            View all <RiArrowRightLine size={13} />
           </Link>
         </div>
 
         {loading ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div className="flex flex-col gap-px">
             {[...Array(2)].map((_, i) => (
-              <div key={i} className="animate-pulse" style={{ height: "68px", borderRadius: "12px", background: "var(--surface)" }} />
+              <div
+                key={i}
+                className="h-14 rounded-xl bg-neutral-100 animate-pulse"
+              />
             ))}
           </div>
         ) : sites.length === 0 ? (
-          <Link to="/dashboard/sites" style={{ textDecoration: "none" }}>
+          <Link to="/dashboard/sites" className="no-underline">
             <motion.div
-              whileHover={{ borderColor: "var(--accent)", scale: 1.005 }}
-              style={{
-                border: "1px dashed var(--border-2)",
-                borderRadius: "12px",
-                padding: "40px",
-                textAlign: "center",
-                cursor: "pointer",
-              }}
+              whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
+              className="border border-dashed border-neutral-200 rounded-2xl p-10 text-center cursor-pointer transition-colors"
             >
-              <div style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 12px",
-                background: "var(--accent-dim)",
-                color: "var(--accent)",
-              }}>
-                <RiAddLine size={20} />
+              <div className="size-9 rounded-xl bg-neutral-100 text-neutral-400 flex items-center justify-center mx-auto mb-3">
+                <RiAddLine size={17} />
               </div>
-              <p className="text-sm font-medium" style={{ color: "var(--text)" }}>Add your first site</p>
-              <p className="text-xs" style={{ color: "var(--muted)", marginTop: "4px" }}>
-                Get a GDPR-compliant consent banner in 2 minutes
+              <p className="text-sm font-medium text-neutral-800">Add your first site</p>
+              <p className="text-sm text-neutral-500 mt-0.5">
+                GDPR-compliant banner in 2 minutes
               </p>
             </motion.div>
           </Link>
         ) : (
-          <motion.div variants={stagger} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {sites.slice(0, 3).map((site) => (
-              <motion.div key={site.id} variants={fadeUp}>
-                <Link to={`/dashboard/sites/${site.id}`} style={{ textDecoration: "none" }}>
-                  <motion.div
-                    whileHover={{ x: 3 }}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "16px 20px",
-                      borderRadius: "12px",
-                      border: "1px solid var(--border)",
-                      background: "var(--surface)",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <div style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        background: "var(--surface-2)",
-                        color: "var(--muted)",
-                      }}>
-                        <RiGlobalLine size={15} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{site.name}</p>
-                        <p className="text-xs" style={{ color: "var(--muted)", marginTop: "2px" }}>{site.domain}</p>
-                      </div>
+          <motion.ul variants={stagger} className="rounded-2xl border border-neutral-200 overflow-hidden">
+            {sites.slice(0, 3).map((site, i) => (
+              <motion.li
+                key={site.id}
+                variants={fadeUp}
+                className={i < Math.min(sites.length, 3) - 1 ? "border-b border-neutral-200" : ""}
+              >
+                <Link
+                  to={`/dashboard/sites/${site.id}`}
+                  className="h-14 grid grid-cols-[1fr_auto] items-center gap-4 px-4 hover:bg-black/5 transition-colors no-underline"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-8 rounded-lg bg-neutral-100 text-neutral-400 flex items-center justify-center shrink-0">
+                      <RiGlobalLine size={14} />
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <span className="text-xs" style={{ color: "var(--muted)" }}>
-                        {(site._count?.consentLogs ?? 0).toLocaleString()} consents
-                      </span>
-                      <RiArrowRightLine size={14} style={{ color: "var(--subtle)" }} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-neutral-800 truncate">{site.name}</p>
+                      <p className="text-xs text-neutral-400 mt-0.5 truncate">{site.domain}</p>
                     </div>
-                  </motion.div>
+                  </div>
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <span className="text-sm text-neutral-400">
+                      {(site._count?.consentLogs ?? 0).toLocaleString()} consents
+                    </span>
+                    <RiArrowRightLine size={13} className="text-neutral-300" />
+                  </div>
                 </Link>
-              </motion.div>
+              </motion.li>
             ))}
-          </motion.div>
+          </motion.ul>
         )}
       </motion.div>
     </motion.div>
   )
 }
 
-function StatCard({ icon: Icon, label, value, accent }: {
-  icon: React.ElementType; label: string; value: string; accent?: boolean
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType
+  label: string
+  value: string
 }) {
   return (
     <motion.div
       variants={fadeUp}
-      style={{
-        borderRadius: "12px",
-        border: "1px solid var(--border)",
-        padding: "16px 20px",
-        background: "var(--surface)",
-      }}
+      className="rounded-2xl border border-neutral-200 p-4"
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-        <div style={{
-          width: "28px",
-          height: "28px",
-          borderRadius: "8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: accent ? "var(--accent-dim)" : "var(--surface-2)",
-          color: accent ? "var(--accent)" : "var(--muted)",
-        }}>
-          <Icon size={14} />
-        </div>
-        <p className="text-xs" style={{ color: "var(--muted)" }}>{label}</p>
+      <div className="flex items-center gap-2 mb-3">
+        <Icon size={13} className="text-neutral-400 shrink-0" />
+        <p className="text-xs text-neutral-400">{label}</p>
       </div>
-      <p className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>{value}</p>
+      <p className="text-2xl font-semibold text-neutral-900 tracking-tight">{value}</p>
     </motion.div>
   )
 }

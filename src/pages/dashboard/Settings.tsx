@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router"
 import { motion } from "motion/react"
-import { RiVipCrownLine, RiCheckLine, RiCircleLine, RiExternalLinkLine } from "react-icons/ri"
+import { RiCheckLine, RiCircleLine, RiExternalLinkLine, RiArrowRightUpLine } from "react-icons/ri"
 import { useAuth } from "../../lib/auth-context"
 import { api } from "../../lib/api"
 import type { Subscription, MonthlyUsage } from "../../lib/types"
@@ -19,7 +19,7 @@ export default function Settings() {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
 
-  const paymentSuccess = searchParams.get("success") === "true"
+  const paymentSuccess  = searchParams.get("success") === "true"
   const paymentCanceled = searchParams.get("canceled") === "true"
 
   useEffect(() => {
@@ -49,142 +49,114 @@ export default function Settings() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease }}
+      transition={{ duration: 0.35, ease }}
     >
       <PageHeader title="Settings" description="Manage your account and billing" />
 
       {paymentSuccess && (
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{
-            marginBottom: "24px",
-            borderRadius: "12px",
-            padding: "16px 20px",
-            background: "var(--green-dim)",
-            border: "1px solid rgba(52,211,153,0.2)",
-            color: "var(--green)",
-          }}
+          className="mb-5 px-3 py-2.5 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700 font-medium"
         >
-          <p className="text-sm font-medium">Payment successful! Your account has been upgraded to Pro.</p>
+          Payment successful — your account has been upgraded to Pro.
         </motion.div>
       )}
       {paymentCanceled && (
-        <div style={{
-          marginBottom: "24px",
-          borderRadius: "12px",
-          padding: "16px 20px",
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-        }}>
-          <p className="text-sm" style={{ color: "var(--muted)" }}>Payment canceled. You're still on the free plan.</p>
+        <div className="mb-5 px-3 py-2.5 rounded-lg bg-neutral-50 border border-neutral-200 text-sm text-neutral-500">
+          Payment canceled. You're still on the free plan.
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        <Card title="Account">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-            <InfoRow label="Name" value={session?.user?.name ?? "—"} />
+      <div className="flex flex-col">
+        <Section title="Account">
+          <div className="grid grid-cols-2 gap-5">
+            <InfoRow label="Name"  value={session?.user?.name  ?? "—"} />
             <InfoRow label="Email" value={session?.user?.email ?? "—"} />
           </div>
-        </Card>
+        </Section>
 
-        <Card title="Plan">
+        <Section title="Plan">
           {loading ? (
-            <div className="animate-pulse" style={{ height: "48px", borderRadius: "8px", background: "var(--surface-2)" }} />
+            <div className="h-11 rounded-xl bg-neutral-100 animate-pulse" />
           ) : (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div className="flex items-center justify-between">
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                  <p className="text-sm font-semibold font-display" style={{ color: "var(--text)" }}>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-semibold text-neutral-900">
                     {isPro ? "Pro" : "Free"}
                   </p>
                   {isPro && (
-                    <span style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      fontSize: "0.75rem",
-                      padding: "2px 8px",
-                      borderRadius: "9999px",
-                      fontWeight: 500,
-                      background: "var(--accent-dim)",
-                      color: "var(--accent)",
-                    }}>
-                      <RiVipCrownLine size={10} /> Active
+                    <span className="inline-block text-xs px-2 py-0.5 rounded-full font-medium bg-neutral-100 text-neutral-500 border border-neutral-200">
+                      Active
                     </span>
                   )}
                 </div>
                 {!isPro && (
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>
-                    5 000 events/month · branding shown
-                  </p>
+                  <p className="text-xs text-neutral-400">5 000 events/month · branding shown</p>
                 )}
                 {isPro && subscription?.currentPeriodEnd && (
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>
+                  <p className="text-xs text-neutral-400">
                     Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                   </p>
                 )}
               </div>
               {isPro ? (
                 <Button variant="secondary" size="sm" onClick={handlePortal} loading={portalLoading}>
-                  <RiExternalLinkLine size={13} /> Manage subscription
+                  <RiExternalLinkLine size={12} /> Manage subscription
                 </Button>
               ) : (
                 <Button size="sm" onClick={handleUpgrade} loading={checkoutLoading}>
-                  <RiVipCrownLine size={13} /> Upgrade — €5/mo
+                  Upgrade — €5/mo <RiArrowRightUpLine size={12} />
                 </Button>
               )}
             </div>
           )}
-        </Card>
+        </Section>
 
         {!loading && usage && (
-          <Card title="Monthly usage">
+          <Section title="Monthly usage">
             <UsageMeter usage={usage} isPro={isPro} />
             {!isPro && (
-              <p className="text-xs" style={{ color: "var(--muted)", marginTop: "12px" }}>
+              <p className="text-xs text-neutral-400 mt-2.5">
                 Resets on the 1st of each month. Upgrade to Pro for unlimited events.
               </p>
             )}
-          </Card>
+          </Section>
         )}
 
         {!isPro && (
-          <Card title="What's included in Pro">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", columnGap: "32px", rowGap: "12px", marginBottom: "20px" }}>
-              <Feature text="Unlimited consent events" pro />
-              <Feature text='Remove "Powered by" branding' pro />
-              <Feature text="Full consent log export (CSV)" pro />
-              <Feature text="Priority support" pro />
+          <Section title="What's included in Pro">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2.5 mb-5">
+              <Feature text="Unlimited consent events"        pro />
+              <Feature text='Remove "Powered by" branding'   pro />
+              <Feature text="Full consent log export (CSV)"  pro />
+              <Feature text="Priority support"               pro />
               <Feature text="All 3 consent categories" />
               <Feature text="Multi-language banners" />
               <Feature text="Unlimited sites" />
               <Feature text="5 000 events/month" />
             </div>
-            <div style={{ paddingTop: "16px", borderTop: "1px solid var(--border)" }}>
+            <div className="pt-4 border-t border-neutral-200">
               <Button onClick={handleUpgrade} loading={checkoutLoading}>
-                <RiVipCrownLine size={14} /> Upgrade to Pro — €5/mo
+                Upgrade to Pro — €5/mo <RiArrowRightUpLine size={13} />
               </Button>
             </div>
-          </Card>
+          </Section>
         )}
       </div>
     </motion.div>
   )
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{
-      borderRadius: "12px",
-      border: "1px solid var(--border)",
-      padding: "20px",
-      background: "var(--surface)",
-    }}>
-      <h2 className="text-sm font-semibold font-display" style={{ color: "var(--text)", marginBottom: "16px" }}>{title}</h2>
+    <div className="py-6 border-b border-neutral-200">
+      <h2 className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-4">
+        {title}
+      </h2>
       {children}
     </div>
   )
@@ -193,31 +165,23 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs" style={{ color: "var(--muted)", marginBottom: "4px" }}>{label}</p>
-      <p className="text-sm" style={{ color: "var(--text)" }}>{value}</p>
+      <p className="text-xs text-neutral-400 mb-0.5">{label}</p>
+      <p className="text-sm text-neutral-800">{value}</p>
     </div>
   )
 }
 
 function Feature({ text, pro }: { text: string; pro?: boolean }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+    <div className="flex items-center gap-2.5">
       {pro
-        ? <RiCheckLine size={14} style={{ color: "var(--accent)", flexShrink: 0 }} />
-        : <RiCircleLine size={14} style={{ color: "var(--subtle)", flexShrink: 0 }} />
+        ? <RiCheckLine size={13} className="text-neutral-800 shrink-0" />
+        : <RiCircleLine size={13} className="text-neutral-300 shrink-0" />
       }
-      <span className="text-sm" style={{ color: pro ? "var(--text)" : "var(--muted)" }}>
+      <span className={`text-sm ${pro ? "text-neutral-800" : "text-neutral-400"}`}>
         {text}
         {pro && (
-          <span style={{
-            marginLeft: "8px",
-            fontSize: "0.75rem",
-            padding: "2px 6px",
-            borderRadius: "9999px",
-            fontWeight: 500,
-            background: "var(--accent-dim)",
-            color: "var(--accent)",
-          }}>
+          <span className="ml-1.5 text-[11px] px-1.5 py-0.5 rounded font-medium bg-neutral-100 text-neutral-400 border border-neutral-200">
             Pro
           </span>
         )}
@@ -230,52 +194,55 @@ function UsageMeter({ usage, isPro }: { usage: MonthlyUsage; isPro: boolean }) {
   if (isPro) {
     return (
       <div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-          <p className="text-sm" style={{ color: "var(--text)" }}>{usage.count.toLocaleString()} events this month</p>
-          <span className="text-xs" style={{ color: "var(--accent)" }}>Unlimited</span>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-neutral-800">{usage.count.toLocaleString()} events this month</p>
+          <span className="text-xs text-neutral-400">Unlimited</span>
         </div>
-        <div style={{ height: "6px", borderRadius: "9999px", overflow: "hidden", background: "var(--surface-2)" }}>
+        <div className="h-1.5 rounded-full overflow-hidden bg-neutral-100">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: "8%" }}
             transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-            style={{ height: "100%", borderRadius: "9999px", background: "var(--accent)" }}
+            className="h-full rounded-full bg-neutral-900"
           />
         </div>
       </div>
     )
   }
 
-  const limit = usage.limit ?? 5000
-  const pct = Math.min((usage.count / limit) * 100, 100)
-  const isWarning = pct >= 80
+  const limit      = usage.limit ?? 5000
+  const pct        = Math.min((usage.count / limit) * 100, 100)
+  const isWarning  = pct >= 80
   const isExceeded = pct >= 100
-  const barColor = isExceeded ? "var(--red)" : isWarning ? "var(--amber)" : "var(--accent)"
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-        <p className="text-sm" style={{ color: "var(--text)" }}>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm text-neutral-800">
           {usage.count.toLocaleString()} / {limit.toLocaleString()} events
         </p>
-        <span className="text-xs font-medium" style={{ color: isExceeded ? "var(--red)" : isWarning ? "var(--amber)" : "var(--muted)" }}>
+        <span className={`text-xs font-medium ${
+          isExceeded ? "text-red-500" : isWarning ? "text-amber-500" : "text-neutral-400"
+        }`}>
           {pct.toFixed(0)}%
         </span>
       </div>
-      <div style={{ height: "6px", borderRadius: "9999px", overflow: "hidden", background: "var(--surface-2)" }}>
+      <div className="h-1.5 rounded-full overflow-hidden bg-neutral-100">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-          style={{ height: "100%", borderRadius: "9999px", background: barColor }}
+          className={`h-full rounded-full ${
+            isExceeded ? "bg-red-500" : isWarning ? "bg-amber-400" : "bg-neutral-900"
+          }`}
         />
       </div>
       {isWarning && !isExceeded && (
-        <p className="text-xs" style={{ color: "var(--amber)", marginTop: "8px" }}>Approaching your monthly limit.</p>
+        <p className="text-xs text-amber-500 mt-1.5">Approaching your monthly limit.</p>
       )}
       {isExceeded && (
-        <p className="text-xs" style={{ color: "var(--red)", marginTop: "8px" }}>
-          Monthly limit reached. New consents aren't recorded in analytics until you upgrade.
+        <p className="text-xs text-red-500 mt-1.5">
+          Monthly limit reached. New consents aren't recorded until you upgrade.
         </p>
       )}
     </div>

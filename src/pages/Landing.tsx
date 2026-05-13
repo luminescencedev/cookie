@@ -11,22 +11,21 @@ import {
   RiGlobalLine,
   RiTimeLine,
   RiLockLine,
-  RiVipCrownLine,
   RiArrowRightUpLine,
-  RiSparklingLine,
 } from "react-icons/ri"
 
 const ease: [number, number, number, number] = [0.21, 0.47, 0.32, 0.98]
 
-function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+function ScrollReveal({ children, delay = 0, className }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
-  const isInView = useInView(ref, { once: true })
+  const isInView = useInView(ref, { once: true, margin: "-60px" })
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 28 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
-      transition={{ duration: 0.6, ease, delay }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      transition={{ duration: 0.55, ease, delay }}
+      className={className}
     >
       {children}
     </motion.div>
@@ -40,7 +39,7 @@ export default function Landing() {
   }, [])
 
   return (
-    <div style={{ background: "var(--bg)", color: "var(--text)", overflowX: "hidden" }}>
+    <div className="bg-white text-neutral-900 overflow-x-hidden">
       <Nav />
       <Hero />
       <LogoBar />
@@ -53,169 +52,120 @@ export default function Landing() {
   )
 }
 
-/* ─── Navigation ─────────────────────────────────────────── */
+/* ─── Navigation ──────────────────────────────────────────── */
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 24)
+    const fn = () => setScrolled(window.scrollY > 16)
     window.addEventListener("scroll", fn, { passive: true })
     return () => window.removeEventListener("scroll", fn)
   }, [])
 
   return (
     <motion.header
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, ease }}
-      style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, padding: "12px 24px", display: "flex", justifyContent: "center" }}
+      transition={{ duration: 0.5, ease }}
+      className={`fixed top-0 left-0 right-0 z-50 px-6 transition-all duration-250 ${
+        scrolled
+          ? "border-b border-neutral-200 bg-white/92 backdrop-blur-md"
+          : "border-b border-transparent bg-transparent"
+      }`}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          width: "100%",
-          maxWidth: "1024px",
-          padding: "0 20px",
-          height: "52px",
-          borderRadius: "16px",
-          border: "1px solid var(--border)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          background: scrolled ? "rgba(14,14,22,0.9)" : "rgba(14,14,22,0.6)",
-          transition: "background 0.3s",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--accent-dim)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <RiShieldCheckLine size={14} />
+      <div className="flex items-center justify-between max-w-5xl mx-auto h-14">
+        <div className="flex items-center gap-2.5">
+          <div className="size-7 rounded-lg bg-neutral-900 text-white flex items-center justify-center shrink-0">
+            <RiShieldCheckLine size={13} />
           </div>
-          <span style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "0.875rem", color: "var(--text)" }}>
-            CookieConsent
-          </span>
+          <span className="text-sm font-semibold text-neutral-800 tracking-tight">CookieConsent</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link to="/login" style={{ fontSize: "0.875rem", color: "var(--muted)", textDecoration: "none" }}>
+
+        <div className="flex items-center gap-2">
+          <Link
+            to="/login"
+            className="text-sm text-neutral-500 hover:text-neutral-800 transition-colors px-3.5 py-1.5 rounded-lg no-underline"
+          >
             Sign in
           </Link>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              to="/signup"
-              style={{
-                display: "flex", alignItems: "center", gap: "6px",
-                fontSize: "0.875rem", fontWeight: 600, padding: "8px 16px",
-                borderRadius: "10px", background: "var(--accent)", color: "var(--bg)",
-                textDecoration: "none",
-              }}
-            >
-              Get started free <RiArrowRightLine size={14} />
-            </Link>
-          </motion.div>
+          <Link
+            to="/signup"
+            className="flex items-center gap-1.5 text-sm font-medium px-3.5 py-1.5 rounded-lg bg-neutral-900 text-white hover:bg-black transition-colors no-underline"
+          >
+            Get started <RiArrowRightLine size={13} />
+          </Link>
         </div>
       </div>
     </motion.header>
   )
 }
 
-/* ─── Hero ───────────────────────────────────────────────── */
+/* ─── Hero ────────────────────────────────────────────────── */
 
 function Hero() {
   return (
-    <section style={{ position: "relative", paddingTop: "140px", paddingBottom: "100px", paddingLeft: "24px", paddingRight: "24px", overflow: "hidden" }}>
-      {/* Glow */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 80% 60% at 50% -5%, rgba(45,212,191,0.13) 0%, transparent 65%)",
-      }} />
-      {/* Grid */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.03,
-        backgroundImage: "linear-gradient(rgba(238,238,242,1) 1px, transparent 1px), linear-gradient(90deg, rgba(238,238,242,1) 1px, transparent 1px)",
-        backgroundSize: "72px 72px",
-      }} />
+    <section className="pt-28 pb-20 px-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="max-w-2xl">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease, delay: 0.05 }}
+            className="inline-flex items-center gap-2 bg-neutral-100 border border-neutral-200 rounded-full px-3.5 py-1 mb-7"
+          >
+            <span className="size-1.5 rounded-full bg-green-500 shrink-0" />
+            <span className="text-xs font-medium text-neutral-500">GDPR · ePrivacy · Free to start</span>
+          </motion.div>
 
-      <div style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}>
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease, delay: 0.05 }}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: "8px",
-            background: "var(--accent-dim)", border: "1px solid rgba(45,212,191,0.25)",
-            borderRadius: "100px", padding: "6px 16px", marginBottom: "28px",
-            fontSize: "0.75rem", fontWeight: 500, color: "var(--accent)",
-          }}
-        >
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", animation: "pulse 2s infinite" }} />
-          GDPR compliant · Free to start · No expertise needed
-        </motion.div>
+          {/* H1 */}
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease, delay: 0.1 }}
+            className="text-[clamp(2.25rem,5vw,3.75rem)] font-semibold leading-[1.1] tracking-[-0.03em] mb-5 text-neutral-900"
+          >
+            Cookie consent,<br />done right.
+          </motion.h1>
 
-        {/* H1 */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease, delay: 0.12 }}
-          style={{
-            fontFamily: "var(--font-display)", fontSize: "clamp(2.8rem, 6vw, 4.5rem)",
-            fontWeight: 800, lineHeight: 1.08, letterSpacing: "-0.03em",
-            marginBottom: "20px", color: "var(--text)",
-          }}
-        >
-          Cookie consent,{" "}
-          <span style={{
-            background: "linear-gradient(135deg, var(--accent) 0%, #60a5fa 100%)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-          }}>
-            done right.
-          </span>
-        </motion.h1>
+          {/* Subheading */}
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease, delay: 0.18 }}
+            className="text-base leading-[1.7] text-neutral-500 mb-9 max-w-lg"
+          >
+            One script tag. A beautiful, legally-sound consent banner live in under 2 minutes.
+            65% cheaper than Cookiebot — free to start, no card required.
+          </motion.p>
 
-        {/* Sub */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease, delay: 0.2 }}
-          style={{ fontSize: "1.125rem", lineHeight: 1.65, color: "var(--muted)", maxWidth: "520px", margin: "0 auto 36px" }}
-        >
-          One script tag. A beautiful, GDPR-compliant consent banner in under 2 minutes.
-          65% cheaper than Cookiebot.
-        </motion.p>
-
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease, delay: 0.28 }}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", marginBottom: "60px" }}
-        >
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease, delay: 0.25 }}
+            className="flex items-center gap-4 mb-16"
+          >
             <Link
               to="/signup"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: "8px",
-                background: "var(--accent)", color: "var(--bg)",
-                fontWeight: 700, fontSize: "0.9rem", padding: "13px 26px",
-                borderRadius: "12px", textDecoration: "none",
-              }}
+              className="inline-flex items-center gap-1.5 bg-neutral-900 text-white font-medium text-[0.9375rem] px-5 py-2.5 rounded-xl hover:bg-black transition-colors no-underline"
             >
-              Start for free <RiArrowRightLine size={15} />
+              Start for free <RiArrowRightLine size={14} />
             </Link>
+            <a
+              href="#how-it-works"
+              className="inline-flex items-center gap-1 text-sm text-neutral-400 hover:text-neutral-800 transition-colors no-underline"
+            >
+              See how it works <RiArrowRightLine size={13} />
+            </a>
           </motion.div>
-          <a
-            href="#how-it-works"
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "0.875rem", color: "var(--muted)", textDecoration: "none" }}
-          >
-            See how it works <RiArrowRightLine size={13} />
-          </a>
-        </motion.div>
+        </div>
 
         {/* Browser mockup */}
         <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.75, ease, delay: 0.35 }}
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease, delay: 0.3 }}
         >
           <HeroBrowserMockup />
         </motion.div>
@@ -226,92 +176,97 @@ function Hero() {
 
 function HeroBrowserMockup() {
   const [dismissed, setDismissed] = useState(false)
-  const [accepted, setAccepted] = useState(false)
+  const [accepted, setAccepted]   = useState(false)
 
   return (
-    <div style={{
-      borderRadius: "16px", overflow: "hidden", textAlign: "left",
-      border: "1px solid var(--border-2)",
-      boxShadow: "0 0 0 1px rgba(45,212,191,0.08), 0 32px 80px rgba(0,0,0,0.55)",
-      maxWidth: "680px", margin: "0 auto",
-    }}>
-      {/* Chrome */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 16px", background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
-        <div style={{ display: "flex", gap: "6px" }}>
-          <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff5f57" }} />
-          <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#febc2e" }} />
-          <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28c840" }} />
+    <div className="rounded-2xl overflow-hidden border border-neutral-200 max-w-2xl shadow-[0_4px_40px_rgba(0,0,0,0.07)]">
+      {/* Chrome bar */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-neutral-50 border-b border-neutral-200">
+        <div className="flex gap-1.5">
+          <div className="size-2.5 rounded-full bg-neutral-300" />
+          <div className="size-2.5 rounded-full bg-neutral-300" />
+          <div className="size-2.5 rounded-full bg-neutral-300" />
         </div>
-        <div style={{ flex: 1, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "6px", height: 24, margin: "0 12px", padding: "0 10px", display: "flex", alignItems: "center" }}>
-          <span style={{ fontSize: "0.7rem", color: "var(--muted)" }}>yoursite.com</span>
+        <div className="flex-1 bg-white border border-neutral-200 rounded h-5 mx-3 px-2.5 flex items-center">
+          <span className="text-[11px] text-neutral-400">yoursite.com</span>
         </div>
       </div>
+
       {/* Page skeleton */}
-      <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", background: "rgba(255,255,255,0.02)" }}>
-        <div style={{ height: 11, borderRadius: 8, background: "var(--surface-2)", width: "72%" }} />
-        <div style={{ height: 11, borderRadius: 8, background: "var(--surface-2)", width: "50%" }} />
-        <div style={{ height: 11, borderRadius: 8, background: "var(--surface-2)", width: "63%" }} />
+      <div className="p-5 flex flex-col gap-2 bg-white">
+        <div className="h-2.5 rounded-md bg-neutral-100 w-[68%]" />
+        <div className="h-2.5 rounded-md bg-neutral-100 w-[47%]" />
+        <div className="h-2.5 rounded-md bg-neutral-100 w-[58%]" />
       </div>
+
       {/* Banner */}
       {dismissed ? (
-        <div style={{ padding: "18px", textAlign: "center", background: "var(--surface)", borderTop: "1px solid var(--border)" }}>
-          <p style={{ fontSize: "0.8rem", fontWeight: 500, color: accepted ? "var(--accent)" : "var(--muted)", marginBottom: 6 }}>
-            {accepted ? "✓ Consent saved" : "✗ Rejected"}
+        <div className="p-4 text-center bg-neutral-50 border-t border-neutral-200">
+          <p className={`text-sm font-medium mb-1.5 ${accepted ? "text-green-600" : "text-neutral-400"}`}>
+            {accepted ? "✓ Consent saved" : "Rejected"}
           </p>
-          <button onClick={() => { setDismissed(false); setAccepted(false) }} style={{ fontSize: "0.7rem", color: "var(--muted)", textDecoration: "underline", background: "none", border: "none", cursor: "pointer" }}>
+          <button
+            onClick={() => { setDismissed(false); setAccepted(false) }}
+            className="text-xs text-neutral-400 underline bg-transparent border-0 cursor-pointer"
+          >
             Reset preview
           </button>
         </div>
       ) : (
-        <div style={{ padding: "18px 20px", background: "var(--surface-2)", borderTop: "1px solid var(--border)" }}>
-          <p style={{ fontFamily: "var(--font-display)", fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>We use cookies</p>
-          <p style={{ fontSize: "0.75rem", color: "var(--muted)", marginBottom: 14, lineHeight: 1.5 }}>
+        <div className="px-5 py-4 bg-white border-t border-neutral-200">
+          <p className="text-sm font-semibold text-neutral-900 mb-1">We use cookies</p>
+          <p className="text-xs text-neutral-500 mb-3 leading-relaxed">
             We use cookies to improve your experience and analyze traffic.
           </p>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+          <div className="flex gap-2 flex-wrap">
+            <button
               onClick={() => { setAccepted(true); setDismissed(true) }}
-              style={{ padding: "8px 16px", borderRadius: 8, background: "var(--accent)", color: "var(--bg)", fontSize: "0.75rem", fontWeight: 700, border: "none", cursor: "pointer" }}>
+              className="px-3.5 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-medium border-0 cursor-pointer hover:bg-black transition-colors"
+            >
               Accept all
-            </motion.button>
-            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+            </button>
+            <button
               onClick={() => setDismissed(true)}
-              style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", color: "var(--muted)", fontSize: "0.75rem", border: "1px solid var(--border-2)", cursor: "pointer" }}>
+              className="px-3.5 py-1.5 rounded-lg bg-transparent text-neutral-500 text-xs border border-neutral-200 cursor-pointer hover:bg-neutral-50 transition-colors"
+            >
               Reject all
-            </motion.button>
-            <button style={{ padding: "8px 12px", background: "none", border: "none", fontSize: "0.75rem", color: "var(--muted)", cursor: "pointer" }}>
-              Customize →
+            </button>
+            <button className="px-2.5 py-1.5 bg-transparent border-0 text-xs text-neutral-400 cursor-pointer flex items-center gap-1">
+              Customize <RiArrowRightLine size={11} />
             </button>
           </div>
-          <p style={{ fontSize: "0.65rem", color: "var(--subtle)", marginTop: 12 }}>Powered by CookieConsent</p>
+          <p className="text-[10px] text-neutral-300 mt-2.5">Powered by CookieConsent</p>
         </div>
       )}
     </div>
   )
 }
 
-/* ─── Logo bar ───────────────────────────────────────────── */
+/* ─── Logo bar ────────────────────────────────────────────── */
 
 function LogoBar() {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref     = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true })
-  const names = ["Stripe", "Vercel", "Supabase", "Next.js", "Shopify", "Linear", "Prisma"]
+  const names   = ["Stripe", "Vercel", "Supabase", "Next.js", "Shopify", "Linear", "Prisma"]
 
   return (
-    <div ref={ref} style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", padding: "36px 24px" }}>
+    <div ref={ref} className="border-t border-b border-neutral-200 py-8 px-6">
       <motion.p
-        initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5 }}
-        style={{ textAlign: "center", fontSize: "0.7rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--subtle)", marginBottom: "24px" }}
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.4 }}
+        className="text-center text-xs tracking-widest uppercase text-neutral-300 mb-5"
       >
         Trusted by developers building on
       </motion.p>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "40px", flexWrap: "wrap" }}>
+      <div className="flex items-center justify-center gap-9 flex-wrap">
         {names.map((name, i) => (
-          <motion.span key={name}
-            initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.4, delay: i * 0.06 }}
-            style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "0.875rem", color: "var(--border-2)" }}
+          <motion.span
+            key={name}
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.35, delay: i * 0.05 }}
+            className="font-medium text-sm text-neutral-300"
           >
             {name}
           </motion.span>
@@ -321,50 +276,40 @@ function LogoBar() {
   )
 }
 
-/* ─── How it works ───────────────────────────────────────── */
+/* ─── How it works ────────────────────────────────────────── */
 
 function HowItWorks() {
   const steps = [
-    { n: "01", icon: RiGlobalLine, title: "Sign up free", desc: "Create your account in 30 seconds. No credit card, no setup fees." },
-    { n: "02", icon: RiBarChartLine, title: "Add your site", desc: "Enter your domain, customize the banner — text, colors, language." },
-    { n: "03", icon: RiCodeLine, title: "Paste one script", desc: "Copy the embed code into your <head>. That's it — live instantly." },
+    { n: "01", icon: RiGlobalLine,    title: "Sign up in seconds",    desc: "Create your account for free. No credit card, no setup fees." },
+    { n: "02", icon: RiBarChartLine,  title: "Configure your banner", desc: "Set language, customize copy, colors, consent categories." },
+    { n: "03", icon: RiCodeLine,      title: "Paste & go live",        desc: "One line of HTML in your <head>. Your site is compliant instantly." },
   ]
 
   return (
-    <section id="how-it-works" style={{ padding: "100px 24px" }}>
-      <div style={{ maxWidth: "1024px", margin: "0 auto" }}>
+    <section id="how-it-works" className="py-24 px-6">
+      <div className="max-w-5xl mx-auto">
         <ScrollReveal>
-          <div style={{ textAlign: "center", marginBottom: "56px" }}>
-            <p style={{ fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--accent)", marginBottom: "12px" }}>
+          <div className="mb-12">
+            <p className="text-xs font-medium tracking-widest uppercase text-neutral-400 mb-2.5">
               Simple process
             </p>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.75rem, 4vw, 2.5rem)", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
+            <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-semibold text-neutral-900 tracking-tight">
               Up and running in 2 minutes
             </h2>
           </div>
         </ScrollReveal>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+        <div className="grid grid-cols-3 gap-3">
           {steps.map((step, i) => (
-            <ScrollReveal key={step.n} delay={i * 0.1}>
-              <motion.div
-                whileHover={{ y: -4, borderColor: "rgba(45,212,191,0.3)" }}
-                transition={{ duration: 0.2 }}
-                style={{
-                  background: "var(--surface)", border: "1px solid var(--border)",
-                  borderRadius: "16px", padding: "28px",
-                  position: "relative", overflow: "hidden",
-                  transition: "border-color 0.2s",
-                }}
-              >
-                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, var(--accent), transparent)", opacity: 0.3 }} />
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--accent-dim)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-                  <step.icon size={20} />
+            <ScrollReveal key={step.n} delay={i * 0.08} className="h-full">
+              <div className="rounded-2xl border border-neutral-200 bg-white p-7 h-full">
+                <p className="text-xs font-mono text-neutral-300 mb-5">{step.n}</p>
+                <div className="size-9 rounded-xl bg-neutral-100 text-neutral-400 flex items-center justify-center mb-4">
+                  <step.icon size={17} />
                 </div>
-                <p style={{ fontSize: "0.7rem", fontFamily: "monospace", color: "var(--subtle)", marginBottom: "8px" }}>{step.n}</p>
-                <p style={{ fontFamily: "var(--font-display)", fontSize: "1rem", fontWeight: 700, color: "var(--text)", marginBottom: "10px" }}>{step.title}</p>
-                <p style={{ fontSize: "0.875rem", lineHeight: 1.6, color: "var(--muted)" }}>{step.desc}</p>
-              </motion.div>
+                <p className="text-[0.9375rem] font-semibold text-neutral-900 mb-2 tracking-tight">{step.title}</p>
+                <p className="text-sm leading-relaxed text-neutral-500">{step.desc}</p>
+              </div>
             </ScrollReveal>
           ))}
         </div>
@@ -373,45 +318,42 @@ function HowItWorks() {
   )
 }
 
-/* ─── Features ───────────────────────────────────────────── */
+/* ─── Features ────────────────────────────────────────────── */
 
 function Features() {
   const features = [
-    { icon: RiShieldCheckLine, title: "GDPR compliant", desc: "Granular consent categories, configVersion re-consent, full audit log." },
-    { icon: RiTimeLine,        title: "2-minute setup",  desc: "Paste one script tag. No SDK, no config, no expertise required." },
-    { icon: RiGlobalLine,      title: "Multi-language",  desc: "Auto-detects visitor language. EN, FR, DE, ES, IT supported." },
-    { icon: RiBarChartLine,    title: "Analytics",        desc: "Track accept rates, category consent splits, daily trends." },
-    { icon: RiLockLine,        title: "Privacy by design", desc: "No third-party cookies. Data stays in your own database." },
-    { icon: RiVipCrownLine,    title: "Grow with Pro",   desc: "Free up to 5k events/month. Unlimited at €5/mo." },
+    { icon: RiShieldCheckLine, title: "Legally solid",       desc: "Granular consent categories, version-based re-consent, full audit log — built for GDPR and ePrivacy." },
+    { icon: RiTimeLine,        title: "2-minute setup",      desc: "No SDK. No config file. One script tag and you're done." },
+    { icon: RiGlobalLine,      title: "Multi-language",      desc: "Auto-detects the visitor's browser language. EN, FR, DE, ES, IT out of the box." },
+    { icon: RiBarChartLine,    title: "Consent analytics",   desc: "Track accept rates, category consent splits, and daily trends — all from the dashboard." },
+    { icon: RiLockLine,        title: "Privacy by design",   desc: "No third-party cookies. Consent data stays in your own database." },
+    { icon: RiCodeLine,        title: "Fair pricing",        desc: "Free forever for small sites. Unlimited at €5/mo — 65% less than Cookiebot." },
   ]
 
   return (
-    <section style={{ padding: "100px 24px", background: "var(--surface)" }}>
-      <div style={{ maxWidth: "1024px", margin: "0 auto" }}>
+    <section className="py-24 px-6 bg-neutral-50 border-t border-b border-neutral-200">
+      <div className="max-w-5xl mx-auto">
         <ScrollReveal>
-          <div style={{ textAlign: "center", marginBottom: "56px" }}>
-            <p style={{ fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--accent)", marginBottom: "12px" }}>
+          <div className="mb-12">
+            <p className="text-xs font-medium tracking-widest uppercase text-neutral-400 mb-2.5">
               Everything included
             </p>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.75rem, 4vw, 2.5rem)", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
+            <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-semibold text-neutral-900 tracking-tight">
               Not just a banner
             </h2>
           </div>
         </ScrollReveal>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+        <div className="grid grid-cols-3 gap-3">
           {features.map((f, i) => (
-            <ScrollReveal key={f.title} delay={i * 0.07}>
-              <motion.div
-                whileHover={{ y: -3 }}
-                style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "14px", padding: "24px" }}
-              >
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: "var(--accent-dim)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
-                  <f.icon size={17} />
+            <ScrollReveal key={f.title} delay={i * 0.05} className="h-full">
+              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 h-full">
+                <div className="size-8 rounded-lg bg-white border border-neutral-200 text-neutral-400 flex items-center justify-center mb-3.5">
+                  <f.icon size={15} />
                 </div>
-                <p style={{ fontFamily: "var(--font-display)", fontSize: "0.9rem", fontWeight: 700, color: "var(--text)", marginBottom: "8px" }}>{f.title}</p>
-                <p style={{ fontSize: "0.8rem", lineHeight: 1.6, color: "var(--muted)" }}>{f.desc}</p>
-              </motion.div>
+                <p className="text-[0.9375rem] font-semibold text-neutral-900 mb-1.5 tracking-tight">{f.title}</p>
+                <p className="text-sm leading-relaxed text-neutral-500">{f.desc}</p>
+              </div>
             </ScrollReveal>
           ))}
         </div>
@@ -420,49 +362,44 @@ function Features() {
   )
 }
 
-/* ─── Pricing ────────────────────────────────────────────── */
+/* ─── Pricing ─────────────────────────────────────────────── */
 
 function Pricing() {
   return (
-    <section id="pricing" style={{ padding: "100px 24px" }}>
-      <div style={{ maxWidth: "1024px", margin: "0 auto" }}>
+    <section id="pricing" className="py-24 px-6">
+      <div className="max-w-5xl mx-auto">
         <ScrollReveal>
-          <div style={{ textAlign: "center", marginBottom: "56px" }}>
-            <p style={{ fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--accent)", marginBottom: "12px" }}>
+          <div className="mb-12">
+            <p className="text-xs font-medium tracking-widest uppercase text-neutral-400 mb-2.5">
               Pricing
             </p>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.75rem, 4vw, 2.5rem)", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", marginBottom: "12px" }}>
-              Simple. Honest. Fair.
+            <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-semibold text-neutral-900 tracking-tight mb-2">
+              No gimmicks. No lock-in.
             </h2>
-            <p style={{ fontSize: "0.9rem", color: "var(--muted)" }}>Start free. Upgrade only when you need to.</p>
+            <p className="text-[0.9375rem] text-neutral-500">Start free. Upgrade only when you need to.</p>
           </div>
         </ScrollReveal>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", maxWidth: "720px", margin: "0 auto" }}>
+        <div className="grid grid-cols-2 max-w-2xl rounded-2xl overflow-hidden border border-neutral-200">
           {/* Free */}
-          <ScrollReveal>
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", padding: "32px", height: "100%" }}>
-              <p style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--muted)", marginBottom: "8px" }}>Free</p>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "28px" }}>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: "3rem", fontWeight: 800, color: "var(--text)", lineHeight: 1 }}>€0</span>
-                <span style={{ fontSize: "0.85rem", color: "var(--muted)" }}>/ forever</span>
+          <ScrollReveal className="h-full">
+            <div className="bg-white p-8 h-full border-r border-neutral-200">
+              <p className="text-sm font-medium text-neutral-400 mb-2">Free</p>
+              <div className="flex items-baseline gap-1 mb-7">
+                <span className="text-4xl font-semibold text-neutral-900 leading-none tracking-tight">€0</span>
+                <span className="text-sm text-neutral-400">/ forever</span>
               </div>
-              <ul style={{ listStyle: "none", marginBottom: "28px", display: "flex", flexDirection: "column", gap: "12px" }}>
+              <ul className="space-y-2.5 mb-7">
                 {["1 website", "5 000 events / month", "30-day log history", "Basic analytics"].map((f) => (
-                  <li key={f} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "0.875rem", color: "var(--muted)" }}>
-                    <RiCheckLine size={15} style={{ color: "var(--subtle)", flexShrink: 0 }} />
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-neutral-500">
+                    <span className="size-1.5 rounded-full bg-neutral-300 shrink-0" />
                     {f}
                   </li>
                 ))}
               </ul>
               <Link
                 to="/signup"
-                style={{
-                  display: "block", textAlign: "center", padding: "12px",
-                  borderRadius: "10px", border: "1px solid var(--border-2)",
-                  fontSize: "0.875rem", fontWeight: 600, color: "var(--text)",
-                  textDecoration: "none", transition: "background 0.15s",
-                }}
+                className="block text-center py-2 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-800 hover:bg-neutral-50 transition-colors no-underline"
               >
                 Get started
               </Link>
@@ -470,53 +407,33 @@ function Pricing() {
           </ScrollReveal>
 
           {/* Pro */}
-          <ScrollReveal delay={0.1}>
-            <motion.div
-              whileHover={{ y: -4 }}
-              style={{
-                background: "var(--surface-2)", borderRadius: "20px",
-                border: "1px solid rgba(45,212,191,0.3)", padding: "32px",
-                position: "relative", overflow: "hidden", height: "100%",
-              }}
-            >
-              <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(45,212,191,0.07), transparent)", pointerEvents: "none" }} />
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, var(--accent), transparent)" }} />
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", position: "relative" }}>
-                <p style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--text)" }}>Pro</p>
-                <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.7rem", fontWeight: 600, padding: "3px 10px", borderRadius: "100px", background: "var(--accent-dim)", color: "var(--accent)" }}>
-                  <RiSparklingLine size={11} /> Most popular
-                </span>
+          <ScrollReveal delay={0.06} className="h-full">
+            <div className="bg-neutral-900 p-8 h-full">
+              <p className="text-sm font-medium text-white/60 mb-2">Pro</p>
+              <div className="flex items-baseline gap-1 mb-7">
+                <span className="text-4xl font-semibold text-white leading-none tracking-tight">€5</span>
+                <span className="text-sm text-white/50">/ month</span>
               </div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "28px", position: "relative" }}>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: "3rem", fontWeight: 800, color: "var(--text)", lineHeight: 1 }}>€5</span>
-                <span style={{ fontSize: "0.85rem", color: "var(--muted)" }}>/ month</span>
-              </div>
-              <ul style={{ listStyle: "none", marginBottom: "28px", display: "flex", flexDirection: "column", gap: "12px", position: "relative" }}>
+              <ul className="space-y-2.5 mb-7">
                 {["Unlimited websites", "Unlimited events", "Remove branding", "Full CSV export", "Priority support"].map((f) => (
-                  <li key={f} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "0.875rem", color: "var(--text)" }}>
-                    <RiCheckLine size={15} style={{ color: "var(--accent)", flexShrink: 0 }} />
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-white/80">
+                    <RiCheckLine size={13} className="text-white shrink-0" />
                     {f}
                   </li>
                 ))}
               </ul>
               <Link
                 to="/signup"
-                style={{
-                  display: "block", textAlign: "center", padding: "12px",
-                  borderRadius: "10px", background: "var(--accent)",
-                  fontSize: "0.875rem", fontWeight: 700, color: "var(--bg)",
-                  textDecoration: "none", position: "relative",
-                }}
+                className="block text-center py-2 rounded-xl bg-white text-sm font-medium text-neutral-900 hover:bg-neutral-100 transition-colors no-underline"
               >
                 Upgrade to Pro
               </Link>
-            </motion.div>
+            </div>
           </ScrollReveal>
         </div>
 
-        <ScrollReveal delay={0.2}>
-          <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--muted)", marginTop: "20px" }}>
+        <ScrollReveal delay={0.1}>
+          <p className="text-xs text-neutral-400 mt-4">
             65% cheaper than Cookiebot. No contracts. Cancel anytime.
           </p>
         </ScrollReveal>
@@ -525,59 +442,52 @@ function Pricing() {
   )
 }
 
-/* ─── CTA ────────────────────────────────────────────────── */
+/* ─── CTA ─────────────────────────────────────────────────── */
 
 function CTA() {
   return (
-    <section style={{ padding: "100px 24px", background: "var(--surface)", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(45,212,191,0.06), transparent)", pointerEvents: "none" }} />
-      <div style={{ maxWidth: "640px", margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}>
+    <section className="py-24 px-6 border-t border-b border-neutral-200 bg-neutral-50">
+      <div className="max-w-lg mx-auto">
         <ScrollReveal>
-          <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--accent-dim)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px" }}>
-            <RiShieldCheckLine size={26} />
-          </div>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.75rem, 4vw, 2.5rem)", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", marginBottom: "16px" }}>
-            Get compliant today
+          <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-semibold text-neutral-900 tracking-tight mb-3">
+            Your site, compliant in minutes.
           </h2>
-          <p style={{ fontSize: "1rem", lineHeight: 1.65, color: "var(--muted)", marginBottom: "36px" }}>
-            Join developers who chose a simpler, cheaper way to handle cookie consent.
+          <p className="text-[0.9375rem] leading-[1.7] text-neutral-500 mb-8">
+            No credit card. No vendor lock-in. Just a consent banner that earns trust and satisfies regulators.
           </p>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ display: "inline-block" }}>
-            <Link
-              to="/signup"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: "8px",
-                background: "var(--accent)", color: "var(--bg)",
-                fontWeight: 700, fontSize: "0.95rem", padding: "14px 32px",
-                borderRadius: "12px", textDecoration: "none",
-              }}
-            >
-              Start for free — no card needed <RiArrowRightUpLine size={16} />
-            </Link>
-          </motion.div>
+          <Link
+            to="/signup"
+            className="inline-flex items-center gap-1.5 bg-neutral-900 text-white font-medium text-[0.9375rem] px-5 py-2.5 rounded-xl hover:bg-black transition-colors no-underline"
+          >
+            Start for free <RiArrowRightUpLine size={14} />
+          </Link>
         </ScrollReveal>
       </div>
     </section>
   )
 }
 
-/* ─── Footer ─────────────────────────────────────────────── */
+/* ─── Footer ──────────────────────────────────────────────── */
 
 function Footer() {
   return (
-    <footer style={{ borderTop: "1px solid var(--border)", padding: "28px 24px" }}>
-      <div style={{ maxWidth: "1024px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ width: 24, height: 24, borderRadius: 6, background: "var(--accent-dim)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <RiShieldCheckLine size={12} />
+    <footer className="px-6 py-6 bg-white">
+      <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="size-5 rounded-md bg-neutral-900 text-white flex items-center justify-center">
+            <RiShieldCheckLine size={11} />
           </div>
-          <p style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
-            © {new Date().getFullYear()} CookieConsent. GDPR compliant by design.
+          <p className="text-xs text-neutral-400">
+            © {new Date().getFullYear()} CookieConsent
           </p>
         </div>
-        <div style={{ display: "flex", gap: "24px" }}>
+        <div className="flex gap-5">
           {[{ to: "/login", label: "Sign in" }, { to: "/signup", label: "Sign up" }].map(({ to, label }) => (
-            <Link key={to} to={to} style={{ fontSize: "0.75rem", color: "var(--muted)", textDecoration: "none" }}>
+            <Link
+              key={to}
+              to={to}
+              className="text-xs text-neutral-400 hover:text-neutral-800 transition-colors no-underline"
+            >
               {label}
             </Link>
           ))}

@@ -7,37 +7,23 @@ interface Props {
   disabled?: boolean
   type?: "button" | "submit" | "reset"
   onClick?: React.MouseEventHandler<HTMLButtonElement>
-  style?: React.CSSProperties
+  className?: string
   children?: React.ReactNode
 }
 
-const variantStyles: Record<string, React.CSSProperties> = {
-  primary: {
-    background: "var(--accent)",
-    color: "var(--bg)",
-    fontWeight: 600,
-    border: "none",
-  },
-  secondary: {
-    background: "transparent",
-    color: "var(--text)",
-    border: "1px solid var(--border-2)",
-  },
-  ghost: {
-    background: "transparent",
-    color: "var(--muted)",
-    border: "none",
-  },
-  danger: {
-    background: "transparent",
-    color: "var(--red)",
-    border: "1px solid rgba(248,113,113,0.25)",
-  },
+const base =
+  "inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed select-none"
+
+const variants: Record<string, string> = {
+  primary:   "bg-neutral-900 text-white hover:bg-black",
+  secondary: "border border-neutral-200 text-neutral-800 bg-white hover:bg-black/5",
+  ghost:     "text-neutral-500 hover:bg-black/5 hover:text-neutral-800",
+  danger:    "border border-red-200 text-red-600 bg-white hover:bg-red-50",
 }
 
-const sizeStyles: Record<string, React.CSSProperties> = {
-  sm: { padding: "6px 12px", fontSize: "0.75rem" },
-  md: { padding: "8px 16px", fontSize: "0.875rem" },
+const sizes: Record<string, string> = {
+  sm: "px-3 py-1.5 text-sm",
+  md: "px-4 py-2 text-sm",
 }
 
 export default function Button({
@@ -47,50 +33,28 @@ export default function Button({
   disabled,
   type = "button",
   onClick,
-  style,
+  className = "",
   children,
 }: Props) {
   const isDisabled = loading || disabled
 
   return (
     <motion.button
-      whileHover={{ scale: isDisabled ? 1 : 1.02 }}
-      whileTap={{ scale: isDisabled ? 1 : 0.97 }}
+      whileHover={{ scale: isDisabled ? 1 : 1.01 }}
+      whileTap={{ scale: isDisabled ? 1 : 0.98 }}
       type={type}
       disabled={isDisabled}
       onClick={onClick}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "8px",
-        fontWeight: 500,
-        borderRadius: "8px",
-        cursor: isDisabled ? "not-allowed" : "pointer",
-        opacity: isDisabled ? 0.5 : 1,
-        userSelect: "none",
-        fontFamily: "inherit",
-        transition: "background 0.15s, color 0.15s",
-        ...variantStyles[variant],
-        ...sizeStyles[size],
-        ...style,
-      }}
+      className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
     >
       {loading ? (
         <>
-          <span style={{
-            width: "14px",
-            height: "14px",
-            borderRadius: "9999px",
-            border: "2px solid currentColor",
-            borderTopColor: "transparent",
-            animation: "spin 0.7s linear infinite",
-            display: "inline-block",
-            flexShrink: 0,
-          }} />
+          <span className="size-3.5 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0" />
           Loading…
         </>
-      ) : children}
+      ) : (
+        children
+      )}
     </motion.button>
   )
 }

@@ -1,53 +1,62 @@
-import { createContext, useContext, useState, useCallback } from "react"
+import { AnimatePresence, motion } from "motion/react"
+import { RiCheckLine, RiErrorWarningLine, RiInformationLine, RiCloseLine } from "react-icons/ri"
+import { useToastStore } from "../../lib/toast-store"
 
-interface Toast {
-  id: string
-  message: string
-  type: "success" | "error" | "info"
+const icons = {
+  success: RiCheckLine,
+  error: RiErrorWarningLine,
+  info: RiInformationLine,
 }
 
-interface ToastContextValue {
-  toast: (message: string, type?: Toast["type"]) => void
+const styles = {
+  success: "bg-white border-green-200 text-green-800",
+  error:   "bg-white border-red-200 text-red-700",
+  info:    "bg-white border-neutral-200 text-neutral-700",
 }
 
-const ToastContext = createContext<ToastContextValue | null>(null)
-
-export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([])
-
-  const toast = useCallback((message: string, type: Toast["type"] = "info") => {
-    const id = Math.random().toString(36).slice(2)
-    setToasts((t) => [...t, { id, message, type }])
-    setTimeout(() => {
-      setToasts((t) => t.filter((toast) => toast.id !== id))
-    }, 3500)
-  }, [])
+export function Toaster() {
+  const { toasts, dismiss } = useToastStore()
 
   return (
-    <ToastContext.Provider value={{ toast }}>
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+      <AnimatePresence>
+        {toasts.map((t) => {
+          const Icon = icons[t.type]
+          return (
+            <motion.div
+              key={t.id}
+              initial={{ opacity: 0, y: 8, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 4, scale: 0.97 }}
+              transition={{ duration: 0.18, ease: [0.21, 0.47, 0.32, 0.98] }}
+              className={`flex items-center gap-2.5 pl-3 pr-2 py-2.5 rounded-xl border text-sm shadow-sm min-w-55 max-w-xs ${styles[t.type]}`}
+            >
+              <Icon size={15} className="shrink-0" />
+              <span className="flex-1">{t.message}</span>
+              <button
+                onClick={() => dismiss(t.id)}
+                className="shrink-0 flex items-center justify-center size-5 rounded-md text-current opacity-50 hover:opacity-100 transition-opacity"
+              >
+                <RiCloseLine size={14} />
+              </button>
+            </motion.div>
+          )
+        })}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/** @deprecated Use useToastStore instead */
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <>
       {children}
-      <div className="fixed bottom-5 right-5 space-y-2 z-50">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`px-4 py-3 rounded-xl text-sm font-medium shadow-lg border ${
-              t.type === "success"
-                ? "bg-green-50 border-green-200 text-green-800"
-                : t.type === "error"
-                ? "bg-red-50 border-red-200 text-red-800"
-                : "bg-white border-neutral-200 text-neutral-700"
-            }`}
-          >
-            {t.message}
-          </div>
-        ))}
-      </div>
-    </ToastContext.Provider>
+      <Toaster />
+    </>
   )
 }
 
 export function useToast() {
-  const ctx = useContext(ToastContext)
-  if (!ctx) throw new Error("useToast must be inside ToastProvider")
-  return ctx.toast
+  return useToastStore((s) => s.toast)
 }
