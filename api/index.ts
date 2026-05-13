@@ -32,8 +32,10 @@ app.route("/api/consent", consentRoutes)
 app.route("/api/analytics", analyticsRoutes)
 app.route("/api/billing", billingRoutes)
 
-serve({ fetch: app.fetch, port: 3000 }, () => {
-  console.log("API running on http://localhost:3000")
-})
+if (!process.env.VERCEL) {
+  serve({ fetch: app.fetch, port: 3000 }, () => {
+    console.log("API running on http://localhost:3000")
+  })
+}
 
-export default app
+export default app.fetch
