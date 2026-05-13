@@ -1,6 +1,9 @@
-import { NavLink, useNavigate } from "react-router"
+import { useEffect, useState } from "react"
+import { NavLink, Link, useNavigate } from "react-router"
 import { signOut } from "../../lib/auth-client"
 import { useAuth } from "../../lib/auth-context"
+import { api } from "../../lib/api"
+import type { Subscription, MonthlyUsage } from "../../lib/types"
 
 const links = [
   { to: "/dashboard", label: "Overview", end: true },
@@ -11,11 +14,27 @@ const links = [
 export default function Sidebar() {
   const navigate = useNavigate()
   const { data: session } = useAuth()
+  const [sub, setSub] = useState<Subscription | null>(null)
+  const [usage, setUsage] = useState<MonthlyUsage | null>(null)
+
+  useEffect(() => {
+    Promise.all([
+      api.get<Subscription>("/api/billing/subscription").catch(() => null),
+      api.get<MonthlyUsage>("/api/sites/usage/current").catch(() => null),
+    ]).then(([s, u]) => {
+      setSub(s)
+      setUsage(u)
+    })
+  }, [])
 
   async function handleSignOut() {
     await signOut()
     navigate("/login")
   }
+
+  const isPro = sub?.plan === "pro"
+  const isWarning = !isPro && usage && usage.limit && usage.count >= usage.limit * 0.8
+  const isExceeded = !isPro && usage && usage.limit && usage.count >= usage.limit
 
   return (
     <aside className="w-56 h-screen fixed left-0 top-0 border-r border-neutral-100 bg-white flex flex-col">
@@ -58,9 +77,26 @@ export default function Sidebar() {
             </p>
           </div>
         </div>
+
+        {isPro ? (
+          <span className="text-xs bg-neutral-900 text-white px-2 py-0.5 rounded-full">Pro</span>
+        ) : isExceeded ? (
+          <Link to="/dashboard/settings" className="text-xs text-red-500 hover:text-red-600">
+            ⚠ Limit reached →
+          </Link>
+        ) : isWarning ? (
+          <Link to="/dashboard/settings" className="text-xs text-amber-600 hover:text-amber-700">
+            ⚠ 80% used →
+          </Link>
+        ) : (
+          <Link to="/dashboard/settings" className="text-xs text-neutral-400 hover:text-neutral-600 transition">
+            Upgrade →
+          </Link>
+        )}
+
         <button
           onClick={handleSignOut}
-          className="w-full text-left text-xs text-neutral-400 hover:text-neutral-600 transition"
+          className="w-full text-left text-xs text-neutral-400 hover:text-neutral-600 transition mt-2"
         >
           Sign out
         </button>
