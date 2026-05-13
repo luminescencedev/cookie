@@ -36,7 +36,7 @@ importers:
         specifier: ^19.0.0
         version: 19.2.6(react@19.2.6)
       react-router:
-        specifier: ^7.0.0
+        specifier: '7'
         version: 7.15.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       recharts:
         specifier: latest
