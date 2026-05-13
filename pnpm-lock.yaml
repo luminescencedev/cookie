@@ -39,7 +39,7 @@ importers:
         specifier: '7'
         version: 7.15.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       recharts:
-        specifier: latest
+        specifier: '3'
         version: 3.8.1(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react-is@19.2.6)(react@19.2.6)(redux@5.0.1)
       stripe:
         specifier: ^22.0.0
