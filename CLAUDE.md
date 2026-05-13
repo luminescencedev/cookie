@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A GDPR-compliant cookie consent banner SaaS, built day by day following `docs/day-01.md` through `docs/day-15.md`. The project spec is in `docs/00-project-context.md`.
 
-**Progress: Day 13 complete, starting Day 14.**
+**Progress: Day 14 complete, starting Day 15.**
 
 ## What is being built
 
